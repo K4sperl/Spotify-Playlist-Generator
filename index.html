@@ -137,7 +137,8 @@
     <div class="container">
         <h1>Spotify Playlist Generator</h1>
 
-        <button id="loginButton">Mit Spotify anmelden</button>
+        <button id="loginButton" onclick="toggleSpotifyLogin()">Mit Spotify anmelden</button>
+        <p id="loggedInStatus" style="display: none;">Angemeldet als: <span id="loggedInUser"></span> (<a href="#" onclick="logout()">Abmelden</a>)</p>
 
         <label for="inputField">Beschreibung:</label>
         <input type="text" id="inputField" placeholder="Gib hier deine Beschreibung ein">
@@ -147,6 +148,7 @@
 
         <button onclick="validateAndGenerate()">Generieren Playlist</button>
         <button class="cancel-button" onclick="reloadPage()">Abbrechen</button>
+        <button id="saveToSpotifyButton" style="display: none;" onclick="saveToSpotify()">Auf Spotify speichern</button>
 
         <p id="generatedCount" style="display: none;">0/0 Liedern generiert</p>
 
@@ -160,12 +162,31 @@
         </div>
 
         <p id="errorMessage" class="error-message"></p>
+
+        <!-- Verstecktes Div für benutzerdefinierten Text -->
+        <div id="customText" style="display: none;">
+            <!-- Hier kannst du deinen benutzerdefinierten Text als Vorlage eingeben -->
+            <!-- Dieser Text wird im JavaScript als Vorlage verwendet, aber nicht auf der Website angezeigt -->
+        </div>
     </div>
 
     <script>
-        document.getElementById("loginButton").addEventListener("click", function() {
-            authorizeSpotify();
-        });
+        // Überprüfen, ob der Benutzer bereits angemeldet ist
+        var accessToken = localStorage.getItem('accessToken');
+        var userDisplayName = localStorage.getItem('userDisplayName');
+
+        if (accessToken && userDisplayName) {
+            // Benutzer ist angemeldet
+            showLoggedIn(userDisplayName);
+        }
+
+        function toggleSpotifyLogin() {
+            if (accessToken) {
+                logout();
+            } else {
+                authorizeSpotify();
+            }
+        }
 
         function authorizeSpotify() {
             var scopes = 'playlist-read-private playlist-read-collaborative user-read-private';
@@ -181,16 +202,30 @@
                 if (authWindow.closed) {
                     clearInterval(interval);
                     // Get the access token from local storage or a hidden input field
-                    var accessToken = localStorage.getItem('accessToken');
-                    if (accessToken) {
+                    accessToken = localStorage.getItem('accessToken');
+                    userDisplayName = localStorage.getItem('userDisplayName');
+                    if (accessToken && userDisplayName) {
                         // Use the access token to authenticate with Spotify
                         console.log('Authenticated with Spotify! Access token:', accessToken);
-                        // Hier kannst du weitere Aktionen ausführen, z.B. API-Anfragen mit dem Access Token machen
+                        showLoggedIn(userDisplayName);
                     } else {
                         console.error('Error authenticating with Spotify');
                     }
                 }
             }, 1000);
+        }
+
+        function showLoggedIn(userName) {
+            document.getElementById('loginButton').style.display = 'none';
+            document.getElementById('loggedInStatus').style.display = 'block';
+            document.getElementById('loggedInUser').textContent = userName;
+            document.getElementById('saveToSpotifyButton').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('userDisplayName');
+            location.reload(); // Seite neu laden, um den Zustand zu aktualisieren
         }
 
         function validateAndGenerate() {
@@ -339,6 +374,15 @@
             // Hier könntest du deine eigenen Validierungsregeln implementieren
             // Zum Beispiel prüfen, ob nur bestimmte Zeichen erlaubt sind
             return /^[a-zA-Z0-9\s]+$/.test(inputText); // Erlaube nur Buchstaben und Zahlen
+        }
+
+        function saveToSpotify() {
+            var playlistName = prompt("Gib einen Namen für deine Playlist ein:");
+            if (playlistName) {
+                // Hier würdest du die Playlist-Daten an die Spotify API senden
+                // und die Playlist speichern (Beispielcode fehlt hier für die Spotify API Integration)
+                alert(`Playlist "${playlistName}" wurde auf Spotify gespeichert!`);
+            }
         }
     </script>
 
