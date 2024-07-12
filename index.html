@@ -4,6 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Playlist Generator</title>
+    <!-- Favicon links für verschiedene Größen -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <!-- CSS-Stile -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -122,36 +141,7 @@
             color: #ccc;
         }
     </style>
-</head>
-<body>
-
-    <div class="container">
-        <h1>Spotify Playlist Generator</h1>
-
-        <button id="loginButton">Mit Spotify anmelden</button>
-
-        <label for="inputField">Beschreibung:</label>
-        <input type="text" id="inputField" placeholder="Gib hier deine Beschreibung ein">
-
-        <label for="numSongs">Anzahl der Lieder:</label>
-        <input type="number" id="numSongs" min="1" value="10">
-
-        <button onclick="validateAndGenerate()">Generieren Playlist</button>
-
-        <p id="generatedCount">0/0 Liedern generiert</p>
-
-        <div class="playlist" id="playlist">
-            <!-- Hier werden die generierten Songs angezeigt -->
-        </div>
-
-        <div class="related-playlists" id="relatedPlaylists">
-            <h2>Ähnliche Playlists auf Spotify</h2>
-            <!-- Hier werden ähnliche Playlists angezeigt -->
-        </div>
-
-        <p id="errorMessage" class="error-message"></p>
-    </div>
-
+    <!-- JavaScript -->
     <script>
         document.getElementById("loginButton").addEventListener("click", function() {
             authorizeSpotify();
@@ -216,95 +206,81 @@
                     id: i,
                     name: `Song ${i}`,
                     artist: `Künstler ${i}`,
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
+                    image: 'https://via.placeholder.com/50', // Beispielbild für jeden Song
                 };
                 generatedSongs.push(song);
             }
-
-            // Playlist anzeigen
-            displayPlaylist(generatedSongs);
+            displaySongs(generatedSongs);
         }
 
-        function displayPlaylist(songs) {
+        function displaySongs(songs) {
             var playlistElement = document.getElementById("playlist");
-            playlistElement.innerHTML = ""; // Playlist leeren
+            playlistElement.innerHTML = ""; // Leere vorherige Einträge
+
+            var h2 = document.createElement("h2");
+            h2.textContent = "Generierte Playlist";
+            playlistElement.appendChild(h2);
 
             songs.forEach(function(song) {
                 var songItem = document.createElement("div");
                 songItem.classList.add("song-item");
 
-                var songImage = document.createElement("img");
-                songImage.src = song.image;
-                songImage.alt = song.name;
-                songItem.appendChild(songImage);
+                var img = document.createElement("img");
+                img.src = song.image;
+                img.alt = song.name;
+                songItem.appendChild(img);
 
                 var songInfo = document.createElement("div");
                 songInfo.classList.add("song-info");
 
-                var songTitle = document.createElement("h3");
-                songTitle.textContent = song.name;
-                songInfo.appendChild(songTitle);
+                var h3 = document.createElement("h3");
+                h3.textContent = song.name;
+                songInfo.appendChild(h3);
 
-                var songArtist = document.createElement("p");
-                songArtist.textContent = song.artist;
-                songInfo.appendChild(songArtist);
+                var p = document.createElement("p");
+                p.textContent = song.artist;
+                songInfo.appendChild(p);
 
                 songItem.appendChild(songInfo);
                 playlistElement.appendChild(songItem);
             });
-
-            // Aktualisiere den Zähler für die generierten Songs
-            document.getElementById("generatedCount").textContent = `${songs.length}/${songs.length} Liedern generiert`;
         }
 
         function loadRelatedPlaylists() {
-            var relatedPlaylistsElement = document.getElementById("relatedPlaylists");
-            relatedPlaylistsElement.innerHTML = ""; // Ähnliche Playlists leeren
-
+            // Hier könntest du eine API-Anfrage machen, um ähnliche Playlists zu laden
             // Beispiel: Dummy-Daten für Demo-Zwecke
-            var playlists = [
-                {
-                    id: 1,
-                    name: "Chill Out",
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
-                },
-                {
-                    id: 2,
-                    name: "Party Hits",
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
-                },
-                {
-                    id: 3,
-                    name: "Best of 2024",
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
-                },
-                {
-                    id: 4,
-                    name: "Acoustic Favorites",
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
-                },
-                {
-                    id: 5,
-                    name: "Rap Vibes",
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
-                },
+            var relatedPlaylists = [
+                { name: "Ähnliche Playlist 1", image: "https://via.placeholder.com/50" },
+                { name: "Ähnliche Playlist 2", image: "https://via.placeholder.com/50" },
+                { name: "Ähnliche Playlist 3", image: "https://via.placeholder.com/50" }
             ];
+
+            displayRelatedPlaylists(relatedPlaylists);
+        }
+
+        function displayRelatedPlaylists(playlists) {
+            var relatedPlaylistsElement = document.getElementById("relatedPlaylists");
+            relatedPlaylistsElement.innerHTML = ""; // Leere vorherige Einträge
+
+            var h2 = document.createElement("h2");
+            h2.textContent = "Ähnliche Playlists";
+            relatedPlaylistsElement.appendChild(h2);
 
             playlists.forEach(function(playlist) {
                 var playlistItem = document.createElement("div");
                 playlistItem.classList.add("related-playlist-item");
 
-                var playlistImage = document.createElement("img");
-                playlistImage.src = playlist.image;
-                playlistImage.alt = playlist.name;
-                playlistItem.appendChild(playlistImage);
+                var img = document.createElement("img");
+                img.src = playlist.image;
+                img.alt = playlist.name;
+                playlistItem.appendChild(img);
 
                 var playlistInfo = document.createElement("div");
                 playlistInfo.classList.add("playlist-info");
 
-                var playlistTitle = document.createElement("h3");
-                playlistTitle.textContent = playlist.name;
-                playlistInfo.appendChild(playlistTitle);
+                var h3 = document.createElement("h3");
+                h3.textContent = playlist.name;
+                playlistInfo.appendChild(h3);
 
                 playlistItem.appendChild(playlistInfo);
                 relatedPlaylistsElement.appendChild(playlistItem);
@@ -312,27 +288,44 @@
         }
 
         function displayErrorMessage(message) {
-            var errorMessageElement = document.getElementById("errorMessage");
-            errorMessageElement.textContent = message;
-            errorMessageElement.style.display = "block"; // Fehlermeldung anzeigen
-
-            // Fehlermeldung nach 3 Sekunden ausblenden
-            setTimeout(function() {
-                errorMessageElement.style.display = "none";
-            }, 3000);
+            var errorElement = document.getElementById("errorMessage");
+            errorElement.textContent = message;
+            errorElement.style.display = "block";
         }
 
         function hideErrorMessage() {
-            document.getElementById("errorMessage").style.display = "none";
+            var errorElement = document.getElementById("errorMessage");
+            errorElement.style.display = "none";
         }
 
-        // Funktion zum Überprüfen der Eingabe auf unerlaubte Zeichen
-        function isValidInput(text) {
-            // Hier könntest du eine spezifischere Prüfung implementieren, je nachdem welche Zeichen erlaubt sind
-            var regex = /^[a-zA-Z0-9\s\-.,?!äöüßÄÖÜ]+$/; // Beispiel-Regex für erlaubte Zeichen
-            return regex.test(text);
+        function isValidInput(input) {
+            // Beispiel: Einfache Validierung erlaubt nur Buchstaben und Zahlen
+            var regex = /^[a-zA-Z0-9\s]+$/;
+            return regex.test(input);
         }
     </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Spotify Playlist Generator</h1>
+        <label for="inputField">Beschreibung der Playlist:</label>
+        <input type="text" id="inputField" placeholder="Gib hier eine Beschreibung ein">
+        <label for="numSongs">Anzahl der Lieder:</label>
+        <input type="number" id="numSongs" placeholder="Gib die Anzahl der Lieder ein">
+        <button onclick="validateAndGenerate()">Playlist generieren</button>
+        <p id="errorMessage" class="error-message"></p>
 
+        <div class="playlist">
+            <h2>Generierte Playlist</h2>
+            <div id="playlist">
+                <!-- Hier werden die Songs dynamisch hinzugefügt -->
+            </div>
+            <p id="generatedCount"></p>
+        </div>
+
+        <div class="related-playlists" id="relatedPlaylists">
+            <!-- Hier werden ähnliche Playlists dynamisch hinzugefügt -->
+        </div>
+    </div>
 </body>
 </html>
