@@ -4,25 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Playlist Generator</title>
-    <!-- Favicon links für verschiedene Größen -->
-    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-    <meta name="theme-color" content="#ffffff">
-    <!-- CSS-Stile -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -60,7 +42,7 @@
             color: #fff; /* Weißer Text für Eingabefelder */
             box-sizing: border-box;
         }
-        button.generate {
+        button {
             background-color: #1DB954; /* Grün für den Button */
             color: white;
             padding: 12px 24px;
@@ -70,22 +52,12 @@
             font-size: 16px;
             transition: background-color 0.3s ease;
         }
-        button.generate:hover {
-            background-color: #1ed760; /* Dunkleres Grün im Hover-Zustand */
-        }
-        button.cancel {
+        button.cancel-button {
             background-color: #ff4d4d; /* Rot für den Abbrechen-Button */
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
             margin-left: 10px;
         }
-        button.cancel:hover {
-            background-color: #ff6666; /* Helleres Rot im Hover-Zustand */
+        button:hover {
+            background-color: #1ed760; /* Dunkleres Grün im Hover-Zustand */
         }
         p.error-message {
             color: #ff4d4d; /* Rotes für Fehlermeldungen */
@@ -124,10 +96,10 @@
         }
         .related-playlists {
             margin-top: 20px;
-            display: none; /* Anfangs ausgeblendet */
+            display: none; /* Verstecke ähnliche Playlists zu Beginn */
         }
-        .related-playlists.show {
-            display: block; /* Einblenden nach Playlist-Generierung */
+        .related-playlists.active {
+            display: block; /* Zeige ähnliche Playlists nach Generierung */
         }
         .related-playlists h2 {
             color: #1DB954;
@@ -158,22 +130,38 @@
             font-size: 14px;
             color: #ccc;
         }
-        .language-selection {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: #ccc;
-        }
-        .language-selection select {
-            background-color: #555; /* Dunklerer Hintergrund für Auswahl */
-            color: #fff; /* Weißer Text für Auswahl */
-            border: none;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
     </style>
-    <!-- JavaScript -->
+</head>
+<body>
+
+    <div class="container">
+        <h1>Spotify Playlist Generator</h1>
+
+        <button id="loginButton">Mit Spotify anmelden</button>
+
+        <label for="inputField">Beschreibung:</label>
+        <input type="text" id="inputField" placeholder="Gib hier deine Beschreibung ein">
+
+        <label for="numSongs">Anzahl der Lieder:</label>
+        <input type="number" id="numSongs" min="1" value="10">
+
+        <button onclick="validateAndGenerate()">Generieren Playlist</button>
+        <button class="cancel-button" onclick="reloadPage()">Abbrechen</button>
+
+        <p id="generatedCount" style="display: none;">0/0 Liedern generiert</p>
+
+        <div class="playlist" id="playlist">
+            <!-- Hier werden die generierten Songs angezeigt -->
+        </div>
+
+        <div class="related-playlists" id="relatedPlaylists">
+            <h2>Ähnliche Playlists auf Spotify</h2>
+            <!-- Hier werden ähnliche Playlists angezeigt -->
+        </div>
+
+        <p id="errorMessage" class="error-message"></p>
+    </div>
+
     <script>
         document.getElementById("loginButton").addEventListener("click", function() {
             authorizeSpotify();
@@ -183,9 +171,9 @@
             var scopes = 'playlist-read-private playlist-read-collaborative user-read-private';
             var url = 'https://accounts.spotify.com/authorize';
             url += '?response_type=code';
-            url += '&client_id=' + encodeURIComponent('YOUR_SPOTIFY_CLIENT_ID');
+            url += '&client_id=' + encodeURIComponent('0fe8c6577bda455581b8b36be7631e25');
             url += '&scope=' + encodeURIComponent(scopes);
-            url += '&redirect_uri=' + encodeURIComponent('http://localhost:3000/callback');
+            url += '&redirect_uri=' + encodeURIComponent('https://k4sperl.github.io/Spotify-Playlist-Generator.github.io');
 
             var authWindow = window.open(url, '_blank');
 
@@ -217,58 +205,60 @@
             } else {
                 // Erfolgreiche Generierung
                 var generatedText = `Playlist wird generiert für: ${inputText}, mit ${numSongs} Liedern.`;
-                document.getElementById("generatedCount").textContent = generatedText;
+                document.getElementById("generatedCount").textContent = `0/${numSongs} Liedern generiert`;
+                document.getElementById("generatedCount").style.display = "block"; // Zeige den Generierungsstatus an
 
-                // Simulieren der Playlist-Generierung (Dummy-Daten)
-                generatePlaylist(numSongs);
-
-                // Anzeige der ähnlichen Playlists
-                loadRelatedPlaylists();
-                document.getElementById("relatedPlaylists").classList.add("show");
+                // Songs generieren und anzeigen
+                generateSongs(inputText, numSongs);
                 hideErrorMessage();
+
+                // Ähnliche Playlists laden
+                loadRelatedPlaylists();
             }
         }
 
-        function generatePlaylist(numSongs) {
+        function generateSongs(description, numSongs) {
+            // Hier könntest du eine API-Anfrage machen, um passende Songs zu finden
+            // Z.B. mit Spotify Web API, sobald der Benutzer authentifiziert ist
+            // Beispiel: Dummy-Daten für Demo-Zwecke
             var generatedSongs = [];
             for (var i = 1; i <= numSongs; i++) {
                 var song = {
+                    id: i,
                     name: `Song ${i}`,
                     artist: `Künstler ${i}`,
-                    image: "https://via.placeholder.com/50" // Platzhalter für jedes Lied
+                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
                 };
                 generatedSongs.push(song);
             }
-            displaySongs(generatedSongs);
+
+            // Playlist anzeigen
+            displayPlaylist(generatedSongs);
         }
 
-        function displaySongs(songs) {
+        function displayPlaylist(songs) {
             var playlistElement = document.getElementById("playlist");
-            playlistElement.innerHTML = ""; // Leere vorherige Einträge
-
-            var h2 = document.createElement("h2");
-            h2.textContent = "Generierte Playlist";
-            playlistElement.appendChild(h2);
+            playlistElement.innerHTML = ""; // Playlist leeren
 
             songs.forEach(function(song) {
                 var songItem = document.createElement("div");
                 songItem.classList.add("song-item");
 
-                var img = document.createElement("img");
-                img.src = song.image;
-                img.alt = song.name;
-                songItem.appendChild(img);
+                var songImage = document.createElement("img");
+                songImage.src = song.image;
+                songImage.alt = song.name;
+                songItem.appendChild(songImage);
 
                 var songInfo = document.createElement("div");
                 songInfo.classList.add("song-info");
 
-                var h3 = document.createElement("h3");
-                h3.textContent = song.name;
-                songInfo.appendChild(h3);
+                var songName = document.createElement("h3");
+                songName.textContent = song.name;
+                songInfo.appendChild(songName);
 
-                var p = document.createElement("p");
-                p.textContent = song.artist;
-                songInfo.appendChild(p);
+                var artistName = document.createElement("p");
+                artistName.textContent = song.artist;
+                songInfo.appendChild(artistName);
 
                 songItem.appendChild(songInfo);
                 playlistElement.appendChild(songItem);
@@ -276,12 +266,24 @@
         }
 
         function loadRelatedPlaylists() {
-            // Hier könntest du eine API-Anfrage machen, um ähnliche Playlists zu laden
+            // Hier könntest du ähnliche Playlists von Spotify laden
             // Beispiel: Dummy-Daten für Demo-Zwecke
             var relatedPlaylists = [
-                { name: "Ähnliche Playlist 1", image: "https://via.placeholder.com/50" },
-                { name: "Ähnliche Playlist 2", image: "https://via.placeholder.com/50" },
-                { name: "Ähnliche Playlist 3", image: "https://via.placeholder.com/50" }
+                {
+                    id: 1,
+                    name: 'Ähnliche Playlist 1',
+                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
+                },
+                {
+                    id: 2,
+                    name: 'Ähnliche Playlist 2',
+                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
+                },
+                {
+                    id: 3,
+                    name: 'Ähnliche Playlist 3',
+                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
+                },
             ];
 
             displayRelatedPlaylists(relatedPlaylists);
@@ -289,94 +291,56 @@
 
         function displayRelatedPlaylists(playlists) {
             var relatedPlaylistsElement = document.getElementById("relatedPlaylists");
-            relatedPlaylistsElement.innerHTML = ""; // Leere vorherige Einträge
+            relatedPlaylistsElement.innerHTML = ""; // Ähnliche Playlists leeren
 
-            var h2 = document.createElement("h2");
-            h2.textContent = "Ähnliche Playlists";
-            relatedPlaylistsElement.appendChild(h2);
+            var heading = document.createElement("h2");
+            heading.textContent = "Ähnliche Playlists auf Spotify";
+            relatedPlaylistsElement.appendChild(heading);
 
             playlists.forEach(function(playlist) {
                 var playlistItem = document.createElement("div");
                 playlistItem.classList.add("related-playlist-item");
 
-                var img = document.createElement("img");
-                img.src = playlist.image;
-                img.alt = playlist.name;
-                playlistItem.appendChild(img);
+                var playlistImage = document.createElement("img");
+                playlistImage.src = playlist.image;
+                playlistImage.alt = playlist.name;
+                playlistItem.appendChild(playlistImage);
 
                 var playlistInfo = document.createElement("div");
                 playlistInfo.classList.add("playlist-info");
 
-                var h3 = document.createElement("h3");
-                h3.textContent = playlist.name;
-                playlistInfo.appendChild(h3);
+                var playlistName = document.createElement("h3");
+                playlistName.textContent = playlist.name;
+                playlistInfo.appendChild(playlistName);
 
                 playlistItem.appendChild(playlistInfo);
                 relatedPlaylistsElement.appendChild(playlistItem);
             });
+
+            relatedPlaylistsElement.classList.add("active"); // Zeige ähnliche Playlists an
         }
 
         function displayErrorMessage(message) {
-            var errorElement = document.getElementById("errorMessage");
-            errorElement.textContent = message;
-            errorElement.style.display = "block";
+            var errorMessageElement = document.getElementById("errorMessage");
+            errorMessageElement.textContent = `Fehler: ${message}`;
+            errorMessageElement.style.display = "block";
         }
 
         function hideErrorMessage() {
-            var errorElement = document.getElementById("errorMessage");
-            errorElement.style.display = "none";
+            var errorMessageElement = document.getElementById("errorMessage");
+            errorMessageElement.style.display = "none";
         }
 
-        function isValidInput(input) {
-            // Beispiel: Einfache Validierung erlaubt nur Buchstaben und Zahlen
-            var regex = /^[a-zA-Z0-9\s]+$/;
-            return regex.test(input);
+        function reloadPage() {
+            location.reload();
         }
 
-        function cancelGeneration() {
-            location.reload(); // Seite neu laden
-        }
-
-        function changeLanguage() {
-            var select = document.getElementById("languageSelect");
-            var selectedLanguage = select.options[select.selectedIndex].value;
-
-            if (selectedLanguage === "en") {
-                // Weiterleitung zur englischen Version der Seite
-                window.location.href = "index_en.html";
-            }
+        function isValidInput(inputText) {
+            // Hier könntest du deine eigenen Validierungsregeln implementieren
+            // Zum Beispiel prüfen, ob nur bestimmte Zeichen erlaubt sind
+            return /^[a-zA-Z0-9\s]+$/.test(inputText); // Erlaube nur Buchstaben und Zahlen
         }
     </script>
-</head>
-<body>
-    <div class="container">
-        <h1>Spotify Playlist Generator</h1>
-        <div class="language-selection">
-            <label for="languageSelect">Sprache wählen:</label>
-            <select id="languageSelect" onchange="changeLanguage()">
-                <option value="de">Deutsch</option>
-                <option value="en">English</option>
-            </select>
-        </div>
-        <label for="inputField">Beschreibung der Playlist:</label>
-        <input type="text" id="inputField" placeholder="Gib hier eine Beschreibung ein">
-        <label for="numSongs">Anzahl der Lieder:</label>
-        <input type="number" id="numSongs" placeholder="Gib die Anzahl der Lieder ein">
-        <button class="generate" onclick="validateAndGenerate()">Playlist generieren</button>
-        <button class="cancel" onclick="cancelGeneration()">Abbrechen</button>
-        <p id="errorMessage" class="error-message"></p>
 
-        <div class="playlist">
-            <h2>Generierte Playlist</h2>
-            <div id="playlist">
-                <!-- Hier werden die Songs dynamisch hinzugefügt -->
-            </div>
-            <p id="generatedCount"></p>
-        </div>
-
-        <div class="related-playlists" id="relatedPlaylists">
-            <!-- Hier werden ähnliche Playlists dynamisch hinzugefügt -->
-        </div>
-    </div>
 </body>
 </html>
