@@ -6,6 +6,7 @@ body {
     margin: 0;
     padding: 0;
 }
+
 .container {
     max-width: 800px;
     margin: 20px auto;
@@ -15,15 +16,19 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     text-align: left; /* Text linksbündig für Playlist */
 }
+
 h1 {
     color: #1DB954; /* Grün für den Titel */
 }
+
 label {
     display: block;
     margin-bottom: 8px;
     color: #fff; /* Weißer Text für Labels */
 }
-input[type="text"], input[type="number"] {
+
+input[type="text"],
+input[type="number"] {
     width: calc(100% - 20px);
     padding: 8px;
     margin-bottom: 16px;
@@ -34,6 +39,7 @@ input[type="text"], input[type="number"] {
     color: #fff; /* Weißer Text für Eingabefelder */
     box-sizing: border-box;
 }
+
 button {
     background-color: #1DB954; /* Grün für den Button */
     color: white;
@@ -44,44 +50,97 @@ button {
     font-size: 16px;
     transition: background-color 0.3s ease;
 }
+
 button.cancel-button {
     background-color: #ff4d4d; /* Rot für den Abbrechen-Button */
     margin-left: 10px;
 }
+
 button:hover {
     background-color: #1ed760; /* Dunkleres Grün im Hover-Zustand */
 }
+
 p.error-message {
     color: #ff4d4d; /* Rotes für Fehlermeldungen */
     font-size: 14px;
     margin-top: 8px;
     display: none; /* Fehlermeldung zunächst ausblenden */
 }
+
 .playlist {
     margin-top: 20px;
     border-top: 1px solid #666; /* Trennlinie für Playlist */
     padding-top: 10px;
 }
+
 .song-item {
     display: flex;
     align-items: center;
     margin-bottom: 8px;
 }
+
 .song-item img {
     width: 50px;
     height: 50px;
     margin-right: 10px;
     border-radius: 4px;
 }
+
 .song-item .song-info {
     flex: 1;
 }
+
 .song-item .song-info h3 {
     margin: 0;
     font-size: 16px;
     color: #fff;
 }
+
 .song-item .song-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.related-playlists {
+    margin-top: 20px;
+    display: none; /* Verstecke ähnliche Playlists zu Beginn */
+}
+
+.related-playlists.active {
+    display: block; /* Zeige ähnliche Playlists nach Generierung */
+}
+
+.related-playlists h2 {
+    color: #1DB954;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.related-playlist-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.related-playlist-item img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+.related-playlist-item .playlist-info {
+    flex: 1;
+}
+
+.related-playlist-item .playlist-info h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #fff;
+}
+
+.related-playlist-item .playlist-info p {
     margin: 0;
     font-size: 14px;
     color: #ccc;

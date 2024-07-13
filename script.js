@@ -1,9 +1,8 @@
 // Client ID und Client Secret
 const CLIENT_ID = '0fe8c6577bda455581b8b36be7631e25';
 const CLIENT_SECRET = '94a10806a4544e8a854d0a7ac9dc7636';
-const REDIRECT_URI = 'https://k4sperl.github.io/Spotify-Playlist-Generator.github.io';
 
-// Spotify Web API Endpoints
+// Spotify Web API Endpunkte
 const AUTH_URL = 'https://accounts.spotify.com/authorize';
 const API_URL = 'https://api.spotify.com/v1';
 
@@ -47,12 +46,18 @@ async function authorizeSpotify() {
     const scopes = 'playlist-modify-private'; // Rechte für das Erstellen einer privaten Playlist
     state = generateRandomString(16); // Zustand für die Sicherheit
 
-    // Öffnet das Popup-Fenster zur Autorisierung
-    const authUrl = `${AUTH_URL}?response_type=token&client_id=${CLIENT_ID}&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;
-    window.open(authUrl, '_blank', 'width=600,height=800');
-
-    // Wartet auf die Rückgabe des Tokens
     return new Promise((resolve, reject) => {
+        const width = 450,
+            height = 730,
+            left = (window.innerWidth / 2) - (width / 2),
+            top = (window.innerHeight / 2) - (height / 2);
+
+        const authWindow = window.open(
+            `${AUTH_URL}?response_type=token&client_id=${CLIENT_ID}&scope=${encodeURIComponent(scopes)}&state=${state}`,
+            'Spotify Auth',
+            `width=${width},height=${height},top=${top},left=${left}`
+        );
+
         window.addEventListener('message', function receiveMessage(event) {
             if (event.origin !== window.location.origin) return;
 
@@ -67,6 +72,8 @@ async function authorizeSpotify() {
             } else {
                 reject(new Error('Kein Zugriffstoken erhalten.'));
             }
+
+            window.removeEventListener('message', receiveMessage);
         });
     });
 }
@@ -161,30 +168,14 @@ function generateRandomString(length) {
 
 // Funktion zum Anzeigen der Ladeanzeige
 function toggleLoading(showLoading) {
-    const progressDiv = document.querySelector('.progress');
-    if (showLoading) {
-        progressDiv.style.display = 'block';
-    } else {
-        progressDiv.style.display = 'none';
-    }
+    const progressElement = document.querySelector('.progress');
+    progressElement.style.display = showLoading ? 'block' : 'none';
 }
 
 // Funktion zum Anzeigen des Playlist-Links
 function displayPlaylistLink(playlistUrl) {
-    const playlistLinkDiv = document.querySelector('.playlist-link');
-    const playlistLink = document.getElementById('playlistLink');
-    playlistLink.href = playlistUrl;
-    playlistLinkDiv.style.display = 'block';
-}
-
-// Funktion zur Validierung der Eingabe für die Anzahl der Lieder
-function validateNumSongsInput() {
-    const input = document.getElementById('numSongsInput');
-    const value = parseInt(input.value, 10);
-
-    if (isNaN(value) || value < 10 || value > 10000) {
-        input.setCustomValidity('Bitte gib eine gültige Zahl zwischen 10 und 10000 ein.');
-    } else {
-        input.setCustomValidity('');
-    }
+    const playlistLinkElement = document.getElementById('playlistLink');
+    playlistLinkElement.href = playlistUrl;
+    const playlistLinkContainer = document.querySelector('.playlist-link');
+    playlistLinkContainer.style.display = 'block';
 }
