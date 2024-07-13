@@ -1,179 +1,137 @@
-// Spotify API Endpoint zur Suche nach Songs
-const SPOTIFY_API_SEARCH_ENDPOINT = 'https://api.spotify.com/v1/search';
+// Client ID und Client Secret
+const CLIENT_ID = '0fe8c6577bda455581b8b36be7631e25';
+const CLIENT_SECRET = '94a10806a4544e8a854d0a7ac9dc7636';
+const REDIRECT_URI = 'https://deine-redirect-uri.de';
 
-// Überprüfen, ob der Benutzer bereits angemeldet ist
-var accessToken = localStorage.getItem('accessToken');
-var userDisplayName = localStorage.getItem('userDisplayName');
+// Globaler Access Token
+let accessToken = '';
 
-if (accessToken && userDisplayName) {
-    // Benutzer ist angemeldet
-    showLoggedIn(userDisplayName);
-}
-
-// Spotify anmelden oder abmelden
-function toggleSpotifyLogin() {
-    if (accessToken) {
-        logout();
-    } else {
-        authorizeSpotify();
-    }
-}
-
-// Spotify autorisieren
+// Funktion zum Autorisieren mit Spotify
 function authorizeSpotify() {
-    var scopes = 'playlist-read-private playlist-read-collaborative user-read-private';
-    var url = 'https://accounts.spotify.com/authorize';
-    url += '?response_type=code';
-    url += '&client_id=' + encodeURIComponent('0fe8c6577bda455581b8b36be7631e25');
-    url += '&scope=' + encodeURIComponent(scopes);
-    url += '&redirect_uri=' + encodeURIComponent('https://k4sperl.github.io/Spotify-Playlist-Generator.github.io');
+    const authUrl = 'https://accounts.spotify.com/authorize';
+    const scopes = 'playlist-modify-private playlist-modify-public';
+    const state = generateRandomString(16);
 
-    var authWindow = window.open(url, '_blank');
+    let url = `${authUrl}?response_type=token`;
+    url += `&client_id=${CLIENT_ID}`;
+    url += `&scope=${encodeURIComponent(scopes)}`;
+    url += `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+    url += `&state=${state}`;
 
-    var interval = setInterval(function() {
-        if (authWindow.closed) {
-            clearInterval(interval);
-            // Get the access token from local storage or a hidden input field
-            accessToken = localStorage.getItem('accessToken');
-            userDisplayName = localStorage.getItem('userDisplayName');
-            if (accessToken && userDisplayName) {
-                // Use the access token to authenticate with Spotify
-                console.log('Authenticated with Spotify! Access token:', accessToken);
-                showLoggedIn(userDisplayName);
-            } else {
-                console.error('Error authenticating with Spotify');
-            }
+    // Öffne den Spotify-Authentifizierungs-URL in einem neuen Tab
+    window.open(url, '_blank');
+
+    // Überwache den Tab, um den Access Token zu erhalten
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'spotify_access_token') {
+            accessToken = event.newValue;
+            console.log('Access Token:', accessToken);
         }
-    }, 1000);
-}
-
-// Zeige Benutzer als angemeldet an
-function showLoggedIn(userName) {
-    document.getElementById('loginButton').style.display = 'none';
-    document.getElementById('loggedInStatus').style.display = 'block';
-    document.getElementById('loggedInUser').textContent = userName;
-    document.getElementById('saveToSpotifyButton').style.display = 'block';
-}
-
-// Spotify abmelden
-function logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('userDisplayName');
-    location.reload(); // Seite neu laden
-}
-
-// Funktion zur Suche nach Songs auf Spotify
-async function searchSongs(description, numSongs) {
-    try {
-        // Spotify API aufrufen, um Songs basierend auf der Beschreibung zu suchen
-        const response = await fetch(`${SPOTIFY_API_SEARCH_ENDPOINT}?q=${encodeURIComponent(description)}&type=track&limit=${numSongs}`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`, // Hier müsst du das Spotify Zugriffstoken einfügen
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Fehler beim Abrufen der Songs von Spotify');
-        }
-
-        const data = await response.json();
-        const tracks = data.tracks.items.map(item => ({
-            id: item.id,
-            name: item.name,
-            artist: item.artists.map(artist => artist.name).join(', '),
-            image: item.album.images.length > 0 ? item.album.images[0].url : 'https://via.placeholder.com/50', // Platzhalterbild
-        }));
-
-        return tracks;
-    } catch (error) {
-        console.error('Fehler beim Suchen von Songs auf Spotify:', error.message);
-        return []; // Leeres Array zurückgeben, wenn ein Fehler auftritt
-    }
-}
-
-// Funktion zum Generieren und Anzeigen der Playlist basierend auf der Beschreibung
-async function generatePlaylist(description, numSongs) {
-    try {
-        // Songs von Spotify suchen
-        const songs = await searchSongs(description, numSongs);
-
-        // Playlist anzeigen
-        displayPlaylist(songs);
-        showRelatedPlaylists(); // Ähnliche Playlists anzeigen
-    } catch (error) {
-        displayErrorMessage('Fehler beim Generieren der Playlist');
-    }
-}
-
-// Playlist auf der Webseite anzeigen
-function displayPlaylist(songs) {
-    const playlistElement = document.getElementById('playlist');
-    playlistElement.innerHTML = ''; // Playlist leeren
-
-    songs.forEach(song => {
-        const songItem = document.createElement('div');
-        songItem.classList.add('song-item');
-
-        const songImage = document.createElement('img');
-        songImage.src = song.image;
-        songImage.alt = `${song.name} Album Cover`;
-        songItem.appendChild(songImage);
-
-        const songInfo = document.createElement('div');
-        songInfo.classList.add('song-info');
-
-        const songTitle = document.createElement('h3');
-        songTitle.textContent = song.name;
-        songInfo.appendChild(songTitle);
-
-        const songArtist = document.createElement('p');
-        songArtist.textContent = song.artist;
-        songInfo.appendChild(songArtist);
-
-        songItem.appendChild(songInfo);
-        playlistElement.appendChild(songItem);
     });
-
-    document.getElementById('generatedCount').textContent = `0/${songs.length} Liedern generiert`;
-    document.getElementById('generatedCount').style.display = 'block'; // Generierungsstatus anzeigen
 }
 
-// Ähnliche Playlists auf der Webseite anzeigen
-function showRelatedPlaylists() {
-    const relatedPlaylistsElement = document.getElementById('relatedPlaylists');
-    relatedPlaylistsElement.classList.add('active'); // Zeige ähnliche Playlists an
+// Beispiel: Funktion zum Suchen von Songs auf Spotify
+function searchSongs(theme, numSongs) {
+    const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(theme)}&type=track&limit=${numSongs}`;
+
+    fetch(searchUrl, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Suchergebnisse:', data);
+        // Hier kannst du die Suchergebnisse weiter verarbeiten (z.B. auf der Webseite anzeigen)
+    })
+    .catch(error => console.error('Fehler beim Suchen von Songs:', error));
 }
 
-// Fehlermeldung auf der Webseite anzeigen
-function displayErrorMessage(message) {
-    const errorMessageElement = document.getElementById('errorMessage');
-    errorMessageElement.textContent = message;
-    errorMessageElement.style.display = 'block'; // Fehlermeldung anzeigen
+// Beispiel: Funktion zum Speichern einer Playlist auf Spotify
+function savePlaylist(playlistName, songURIs) {
+    const createPlaylistUrl = `https://api.spotify.com/v1/me/playlists`;
+    let playlistId = '';
+
+    // Schritt 1: Playlist erstellen
+    fetch(createPlaylistUrl, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            'name': playlistName,
+            'public': false
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        playlistId = data.id;
+        console.log('Playlist erstellt:', data);
+
+        // Schritt 2: Songs zur Playlist hinzufügen
+        const addTracksUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+        fetch(addTracksUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'uris': songURIs
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Songs hinzugefügt:', data);
+            alert(`Playlist "${playlistName}" wurde erfolgreich auf Spotify gespeichert!`);
+        })
+        .catch(error => console.error('Fehler beim Hinzufügen von Songs zur Playlist:', error));
+    })
+    .catch(error => console.error('Fehler beim Erstellen der Playlist:', error));
 }
 
-// Fehlermeldung auf der Webseite ausblenden
-function hideErrorMessage() {
-    const errorMessageElement = document.getElementById('errorMessage');
-    errorMessageElement.style.display = 'none'; // Fehlermeldung ausblenden
-}
+// Beispiel: Funktion zum Generieren und Anzeigen der Playlist auf der Website
+function generatePlaylist(description, numSongs) {
+    // Beispiel: Suchen nach Songs basierend auf der Beschreibung
+    searchSongs(description, numSongs);
 
-// Benutzerdefinierten Text als Vorlage abrufen
-function getCustomText() {
-    return document.getElementById('customText').textContent.trim();
-}
-
-// Seite neu laden (für Abbrechen-Button)
-function reloadPage() {
-    location.reload();
-}
-
-// Initialisierung prüfen, ob der Benutzer bereits angemeldet ist
-function checkIfLoggedIn() {
-    if (accessToken && userDisplayName) {
-        // Benutzer ist angemeldet
-        showLoggedIn(userDisplayName);
+    // Beispiel: Anzeigen der Playlist auf der Webseite
+    document.getElementById('playlistContainer').innerHTML = '';
+    for (let i = 1; i <= numSongs; i++) {
+        const songName = `Song ${i}`;
+        const artistName = `Artist ${i}`;
+        const songItem = `<div>${songName} - ${artistName}</div>`;
+        document.getElementById('playlistContainer').innerHTML += songItem;
     }
+
+    // Anzeigen des "Playlist speichern" Buttons
+    document.getElementById('savePlaylistButton').style.display = 'block';
 }
 
-// Bei Seitenladen prüfen, ob der Benutzer angemeldet ist
-document.addEventListener('DOMContentLoaded', checkIfLoggedIn);
+// Beispiel: Event-Listener für Interaktionen auf der Website
+document.getElementById('generateButton').addEventListener('click', function() {
+    const description = document.getElementById('descriptionInput').value;
+    const numSongs = parseInt(document.getElementById('numSongsInput').value, 10);
+    generatePlaylist(description, numSongs);
+});
+
+document.getElementById('savePlaylistButton').addEventListener('click', function() {
+    const playlistName = prompt('Gib einen Namen für deine Playlist ein:');
+    if (playlistName) {
+        // Beispiel: Playlist speichern
+        savePlaylist(playlistName, ['spotify:track:1', 'spotify:track:2', 'spotify:track:3']); // Beispiel-URIs
+    }
+});
+
+// Hilfsfunktion: Generiere einen zufälligen String
+function generateRandomString(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
