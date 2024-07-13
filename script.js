@@ -1,7 +1,7 @@
 // Client ID und Client Secret
 const CLIENT_ID = '0fe8c6577bda455581b8b36be7631e25';
 const CLIENT_SECRET = '94a10806a4544e8a854d0a7ac9dc7636';
-const REDIRECT_URI = 'https://k4sperl.github.io/Spotify-Playlist-Generator.github.io/';
+const REDIRECT_URI = 'https://k4sperl.github.io/Spotify-Playlist-Generator.github.io';
 
 // Spotify Web API Endpoints
 const AUTH_URL = 'https://accounts.spotify.com/authorize';
