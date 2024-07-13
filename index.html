@@ -167,19 +167,16 @@
         <div id="customText" style="display: none;">
             <!-- Hier kannst du deinen benutzerdefinierten Text als Vorlage eingeben -->
             <!-- Dieser Text wird im JavaScript als Vorlage verwendet, aber nicht auf der Website angezeigt -->
+            Erstellt von K4sperl Musikdatenbank bereitgestellt von Spotify. Mithilfe von ChatGPT, MicrosoftCopilot und BlackBox.ai habe ich das hier geschafft und es ist erstaunlich was man mit etwas Gedult mit Ai erreichen kann.
         </div>
     </div>
 
     <script>
-        // Überprüfen, ob der Benutzer bereits angemeldet ist
+        // Global variables for access token and user display name
         var accessToken = localStorage.getItem('accessToken');
         var userDisplayName = localStorage.getItem('userDisplayName');
 
-        if (accessToken && userDisplayName) {
-            // Benutzer ist angemeldet
-            showLoggedIn(userDisplayName);
-        }
-
+        // Function to toggle Spotify login/logout
         function toggleSpotifyLogin() {
             if (accessToken) {
                 logout();
@@ -188,6 +185,7 @@
             }
         }
 
+        // Function to initiate Spotify authorization
         function authorizeSpotify() {
             var scopes = 'playlist-read-private playlist-read-collaborative user-read-private';
             var url = 'https://accounts.spotify.com/authorize';
@@ -201,20 +199,53 @@
             var interval = setInterval(function() {
                 if (authWindow.closed) {
                     clearInterval(interval);
-                    // Get the access token from local storage or a hidden input field
-                    accessToken = localStorage.getItem('accessToken');
-                    userDisplayName = localStorage.getItem('userDisplayName');
-                    if (accessToken && userDisplayName) {
-                        // Use the access token to authenticate with Spotify
-                        console.log('Authenticated with Spotify! Access token:', accessToken);
-                        showLoggedIn(userDisplayName);
-                    } else {
-                        console.error('Error authenticating with Spotify');
-                    }
+                    handleRedirect();
                 }
             }, 1000);
         }
 
+        // Function to handle redirect after Spotify authorization
+        function handleRedirect() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var code = urlParams.get('code');
+            if (code) {
+                // Send code to server to exchange for access token
+                fetch('https://your-backend-server.com/spotify-auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code: code }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    accessToken = data.access_token;
+                    localStorage.setItem('accessToken', accessToken);
+                    getUserInfo();
+                })
+                .catch(error => console.error('Error exchanging code for access token:', error));
+            } else {
+                console.error('Authorization code not found.');
+            }
+        }
+
+        // Function to fetch user information from Spotify
+        function getUserInfo() {
+            fetch('https://api.spotify.com/v1/me', {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                userDisplayName = data.display_name;
+                localStorage.setItem('userDisplayName', userDisplayName);
+                showLoggedIn(userDisplayName);
+            })
+            .catch(error => console.error('Error fetching user information:', error));
+        }
+
+        // Function to display logged-in state
         function showLoggedIn(userName) {
             document.getElementById('loginButton').style.display = 'none';
             document.getElementById('loggedInStatus').style.display = 'block';
@@ -222,58 +253,59 @@
             document.getElementById('saveToSpotifyButton').style.display = 'block';
         }
 
+        // Function to log out
         function logout() {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('userDisplayName');
-            location.reload(); // Seite neu laden, um den Zustand zu aktualisieren
+            location.reload(); // Reload page to update state
         }
 
+        // Function to validate input and generate playlist
         function validateAndGenerate() {
             var inputText = document.getElementById("inputField").value.trim();
             var numSongs = parseInt(document.getElementById("numSongs").value, 10);
 
-            // Fehlerprüfung
+            // Validation
             if (inputText === "") {
                 displayErrorMessage("Keine Eingabe");
             } else if (!isValidInput(inputText)) {
-                displayErrorMessage("Unerlaubte Zeichen");
+                displayErrorMessage("Ungültige Eingabe");
+            } else if (numSongs <= 0) {
+                displayErrorMessage("Ungültige Anzahl an Liedern");
             } else {
-                // Erfolgreiche Generierung
-                var generatedText = `Playlist wird generiert für: ${inputText}, mit ${numSongs} Liedern.`;
+                var generatedText = document.getElementById("customText").textContent.trim();
+                console.log("Benutzerdefinierter Text:", generatedText);
                 document.getElementById("generatedCount").textContent = `0/${numSongs} Liedern generiert`;
-                document.getElementById("generatedCount").style.display = "block"; // Zeige den Generierungsstatus an
+                document.getElementById("generatedCount").style.display = "block"; // Show generation status
 
-                // Songs generieren und anzeigen
+                // Generate songs and display
                 generateSongs(inputText, numSongs);
                 hideErrorMessage();
 
-                // Ähnliche Playlists laden
+                // Load related playlists
                 loadRelatedPlaylists();
             }
         }
 
+        // Function to generate songs (dummy data for demonstration)
         function generateSongs(description, numSongs) {
-            // Hier könntest du eine API-Anfrage machen, um passende Songs zu finden
-            // Z.B. mit Spotify Web API, sobald der Benutzer authentifiziert ist
-            // Beispiel: Dummy-Daten für Demo-Zwecke
             var generatedSongs = [];
             for (var i = 1; i <= numSongs; i++) {
                 var song = {
                     id: i,
                     name: `Song ${i}`,
                     artist: `Künstler ${i}`,
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
+                    image: 'https://via.placeholder.com/50', // Example image placeholder
                 };
                 generatedSongs.push(song);
             }
-
-            // Playlist anzeigen
             displayPlaylist(generatedSongs);
         }
 
+        // Function to display generated playlist
         function displayPlaylist(songs) {
             var playlistElement = document.getElementById("playlist");
-            playlistElement.innerHTML = ""; // Playlist leeren
+            playlistElement.innerHTML = ""; // Clear playlist
 
             songs.forEach(function(song) {
                 var songItem = document.createElement("div");
@@ -300,33 +332,20 @@
             });
         }
 
+        // Function to load related playlists (dummy data for demonstration)
         function loadRelatedPlaylists() {
-            // Hier könntest du ähnliche Playlists von Spotify laden
-            // Beispiel: Dummy-Daten für Demo-Zwecke
             var relatedPlaylists = [
-                {
-                    id: 1,
-                    name: 'Ähnliche Playlist 1',
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
-                },
-                {
-                    id: 2,
-                    name: 'Ähnliche Playlist 2',
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
-                },
-                {
-                    id: 3,
-                    name: 'Ähnliche Playlist 3',
-                    image: 'https://via.placeholder.com/50', // Beispielbild, du kannst ein echtes Bild verwenden
-                },
+                { id: 1, name: 'Ähnliche Playlist 1', image: 'https://via.placeholder.com/50' },
+                { id: 2, name: 'Ähnliche Playlist 2', image: 'https://via.placeholder.com/50' },
+                { id: 3, name: 'Ähnliche Playlist 3', image: 'https://via.placeholder.com/50' }
             ];
-
             displayRelatedPlaylists(relatedPlaylists);
         }
 
+        // Function to display related playlists
         function displayRelatedPlaylists(playlists) {
             var relatedPlaylistsElement = document.getElementById("relatedPlaylists");
-            relatedPlaylistsElement.innerHTML = ""; // Ähnliche Playlists leeren
+            relatedPlaylistsElement.innerHTML = ""; // Clear related playlists
 
             var heading = document.createElement("h2");
             heading.textContent = "Ähnliche Playlists auf Spotify";
@@ -352,37 +371,44 @@
                 relatedPlaylistsElement.appendChild(playlistItem);
             });
 
-            relatedPlaylistsElement.classList.add("active"); // Zeige ähnliche Playlists an
+            relatedPlaylistsElement.classList.add("active"); // Show related playlists
         }
 
+        // Function to display error message
         function displayErrorMessage(message) {
             var errorMessageElement = document.getElementById("errorMessage");
             errorMessageElement.textContent = `Fehler: ${message}`;
             errorMessageElement.style.display = "block";
         }
 
+        // Function to hide error message
         function hideErrorMessage() {
             var errorMessageElement = document.getElementById("errorMessage");
             errorMessageElement.style.display = "none";
         }
 
+        // Function to reload page
         function reloadPage() {
             location.reload();
         }
 
+        // Function to validate input text
         function isValidInput(inputText) {
-            // Hier könntest du deine eigenen Validierungsregeln implementieren
-            // Zum Beispiel prüfen, ob nur bestimmte Zeichen erlaubt sind
-            return /^[a-zA-Z0-9\s]+$/.test(inputText); // Erlaube nur Buchstaben und Zahlen
+            return /^[a-zA-Z0-9\s]+$/.test(inputText); // Allow only alphanumeric characters and spaces
         }
 
+        // Function to save playlist to Spotify (placeholder for actual implementation)
         function saveToSpotify() {
             var playlistName = prompt("Gib einen Namen für deine Playlist ein:");
             if (playlistName) {
-                // Hier würdest du die Playlist-Daten an die Spotify API senden
-                // und die Playlist speichern (Beispielcode fehlt hier für die Spotify API Integration)
+                // Placeholder for saving playlist to Spotify
                 alert(`Playlist "${playlistName}" wurde auf Spotify gespeichert!`);
             }
+        }
+
+        // Check if user is already logged in
+        if (accessToken && userDisplayName) {
+            showLoggedIn(userDisplayName);
         }
     </script>
 

@@ -1,143 +1,146 @@
-document.getElementById("loginButton").addEventListener("click", function() {
-    authorizeSpotify();
-});
-
-function authorizeSpotify() {
-    var scopes = 'playlist-read-private playlist-read-collaborative user-read-private';
-    var url = 'https://accounts.spotify.com/authorize';
-    url += '?response_type=code';
-    url += '&client_id='YOUR_SPOTIFY_CLIENT_ID';  // Ersetze dies durch deine Spotify Client ID
-    url += '&scope=' + encodeURIComponent(scopes);
-    url += '&redirect_uri=' + encodeURIComponent('http://localhost:3000/callback'); // Passe diese URL an deine an
-
-    var authWindow = window.open(url, '_blank');
-
-    var interval = setInterval(function() {
-        if (authWindow.closed) {
-            clearInterval(interval);
-            var accessToken = localStorage.getItem('accessToken');
-            if (accessToken) {
-                console.log('Authenticated with Spotify! Access token:', accessToken);
-            } else {
-                console.error('Error authenticating with Spotify');
-            }
-        }
-    }, 1000);
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #333; /* Dunkler Hintergrund für Dark Mode */
+    color: #fff; /* Weißer Text für bessere Lesbarkeit */
+    margin: 0;
+    padding: 0;
 }
 
-function validateAndGenerate() {
-    var inputText = document.getElementById("inputField").value.trim();
-    var numSongs = parseInt(document.getElementById("numSongs").value, 10);
-
-    if (inputText === "") {
-        displayErrorMessage("Keine Eingabe");
-    } else if (!isValidInput(inputText)) {
-        displayErrorMessage("Unerlaubte Zeichen");
-    } else {
-        var generatedText = `Playlist wird generiert für: ${inputText}, mit ${numSongs} Liedern.`;
-        document.getElementById("generatedCount").textContent = `0/${numSongs} Liedern generiert`;
-
-        generateSongs(inputText, numSongs);
-        hideErrorMessage();
-        loadRelatedPlaylists();
-    }
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #444; /* Dunklerer Hintergrund für das Formular */
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    text-align: left; /* Text linksbündig für Playlist */
 }
 
-function generateSongs(description, numSongs) {
-    var generatedSongs = [];
-    for (var i = 1; i <= numSongs; i++) {
-        var song = {
-            id: i,
-            name: `Song ${i}`,
-            artist: `Künstler ${i}`,
-            image: 'https://via.placeholder.com/50',
-        };
-        generatedSongs.push(song);
-    }
-    displayPlaylist(generatedSongs);
+h1 {
+    color: #1DB954; /* Grün für den Titel */
 }
 
-function displayPlaylist(songs) {
-    var playlistElement = document.getElementById("playlist");
-    playlistElement.innerHTML = "";
-    songs.forEach(function(song) {
-        var songItem = document.createElement("div");
-        songItem.classList.add("song-item");
-
-        var songImage = document.createElement("img");
-        songImage.src = song.image;
-        songImage.alt = song.name;
-        songItem.appendChild(songImage);
-
-        var songInfo = document.createElement("div");
-        songInfo.classList.add("song-info");
-
-        var songTitle = document.createElement("h3");
-        songTitle.textContent = song.name;
-        songInfo.appendChild(songTitle);
-
-        var songArtist = document.createElement("p");
-        songArtist.textContent = song.artist;
-        songInfo.appendChild(songArtist);
-
-        songItem.appendChild(songInfo);
-        playlistElement.appendChild(songItem);
-    });
-    document.getElementById("generatedCount").textContent = `${songs.length}/${songs.length} Liedern generiert`;
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #fff; /* Weißer Text für Labels */
 }
 
-function loadRelatedPlaylists() {
-    var relatedPlaylistsElement = document.getElementById("relatedPlaylists");
-    relatedPlaylistsElement.innerHTML = "";
-    var playlists = [
-        {
-            id: 1,
-            name: "Chill Out",
-            image: 'https://via.placeholder.com/50',
-        },
-        {
-            id: 2,
-            name: "Party Hits",
-            image: 'https://via.placeholder.com/50',
-        },
-        {
-            id: 3,
-            name: "Best of 2024",
-            image: 'https://via.placeholder.com/50',
-        },
-        {
-            id: 4,
-            name: "Acoustic Favorites",
-            image: 'https://via.placeholder.com/50',
-        },
-        {
-            id: 5,
-            name: "Rock Classics",
-            image: 'https://via.placeholder.com/50',
-        }
-    ];
-
-    playlists.forEach(function(playlist) {
-        var playlistItem = document.createElement("div");
-        playlistItem.classList.add("related-playlist-item");
-
-        var playlistImage = document.createElement("img");
-        playlistImage.src = playlist.image;
-        playlistImage.alt = playlist.name;
-        playlistItem.appendChild(playlistImage);
-
-        var playlistInfo = document.createElement("div");
-        playlistInfo.classList.add("playlist-info");
-
-        var playlistTitle = document.createElement("h3");
-        playlistTitle.textContent = playlist.name;
-        playlistInfo.appendChild(playlistTitle);
-
-        playlistItem.appendChild(playlistInfo);
-        relatedPlaylistsElement.appendChild(playlistItem);
-    });
+input[type="text"], input[type="number"] {
+    width: calc(100% - 20px);
+    padding: 8px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #555; /* Dunklerer Hintergrund für Eingabefelder */
+    color: #fff; /* Weißer Text für Eingabefelder */
+    box-sizing: border-box;
 }
 
-function displayErrorMessage(message) {
-    var errorMessageElement = document.getElementById("errorMessage");
-    errorMessageElement
+button {
+    background-color: #1DB954; /* Grün für den Button */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button.cancel-button {
+    background-color: #ff4d4d; /* Rot für den Abbrechen-Button */
+    margin-left: 10px;
+}
+
+button:hover {
+    background-color: #1ed760; /* Dunkleres Grün im Hover-Zustand */
+}
+
+p.error-message {
+    color: #ff4d4d; /* Rotes für Fehlermeldungen */
+    font-size: 14px;
+    margin-top: 8px;
+    display: none; /* Fehlermeldung zunächst ausblenden */
+}
+
+.playlist {
+    margin-top: 20px;
+    border-top: 1px solid #666; /* Trennlinie für Playlist */
+    padding-top: 10px;
+}
+
+.song-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.song-item img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+.song-item .song-info {
+    flex: 1;
+}
+
+.song-item .song-info h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #fff;
+}
+
+.song-item .song-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.related-playlists {
+    margin-top: 20px;
+    display: none; /* Verstecke ähnliche Playlists zu Beginn */
+}
+
+.related-playlists.active {
+    display: block; /* Zeige ähnliche Playlists nach Generierung */
+}
+
+.related-playlists h2 {
+    color: #1DB954;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.related-playlist-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.related-playlist-item img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+.related-playlist-item .playlist-info {
+    flex: 1;
+}
+
+.related-playlist-item .playlist-info h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #fff;
+}
+
+.related-playlist-item .playlist-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #ccc;
+}
