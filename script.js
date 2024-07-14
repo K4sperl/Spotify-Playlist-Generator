@@ -5,42 +5,64 @@ const SCOPES = 'playlist-modify-public playlist-modify-private';
 let accessToken = '';
 let expiresIn = 0;
 
-// Event Listener for Generate Button
-document.getElementById('generateButton').addEventListener('click', function() {
+// Elements
+const loginSection = document.getElementById('loginSection');
+const generateSection = document.getElementById('generateSection');
+const playlistSection = document.getElementById('playlistSection');
+const loginButton = document.getElementById('loginButton');
+const generateButton = document.getElementById('generateButton');
+const savePlaylistButton = document.getElementById('savePlaylistButton');
+const playPlaylistButton = document.getElementById('playPlaylistButton');
+const stopPlaylistButton = document.getElementById('stopPlaylistButton');
+const volumeSlider = document.getElementById('volumeSlider');
+const songVolumeSlider = document.getElementById('songVolumeSlider');
+const audioPlayer = document.getElementById('audioPlayer');
+const prevButton = document.getElementById('prevButton');
+const nextButton = document.getElementById('nextButton');
+
+// Event Listener for Mit Spotify anmelden Button
+loginButton.addEventListener('click', initiateSpotifyAuth);
+
+// Event Listener for Generate Playlist Button
+generateButton.addEventListener('click', function() {
     const description = document.getElementById('descriptionInput').value;
     const numSongs = parseInt(document.getElementById('numSongsInput').value, 10);
     if (numSongs < 10 || numSongs > 10000 || isNaN(numSongs)) {
         showError('Bitte geben Sie eine gültige Anzahl von Liedern ein (mindestens 10, maximal 10.000).');
         return;
     }
-    // Check if accessToken is already set and not expired
-    if (accessToken && expiresIn > Date.now()) {
-        generatePlaylist(description, numSongs); // Proceed to generate playlist
-    } else {
-        initiateSpotifyAuth(); // Otherwise, initiate Spotify authorization
-    }
+    generatePlaylist(description, numSongs);
 });
 
-// Function to validate number input
-function validateNumberInput(input) {
-    const value = input.value;
-    if (!/^\d*$/.test(value)) {
-        input.value = value.replace(/\D/g, '');
-    }
-}
+// Event Listener for Save Playlist Button
+savePlaylistButton.addEventListener('click', function() {
+    const playlistName = document.getElementById('descriptionInput').value;
+    savePlaylist(playlistName);
+});
 
-// Function to show error message
-function showError(message) {
-    const errorMessage = document.getElementById('error-message');
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-}
+// Event Listener for Play Playlist Button
+playPlaylistButton.addEventListener('click', playPlaylist);
 
-// Function to hide error message
-function hideError() {
-    const errorMessage = document.getElementById('error-message');
-    errorMessage.style.display = 'none';
-}
+// Event Listener for Stop Playlist Button
+stopPlaylistButton.addEventListener('click', stopPlaylist);
+
+// Event Listener for Volume Slider (global)
+volumeSlider.addEventListener('input', function() {
+    const volume = parseInt(volumeSlider.value) / 100;
+    audioPlayer.volume = volume;
+});
+
+// Event Listener for Song Volume Slider
+songVolumeSlider.addEventListener('input', function() {
+    const volume = parseInt(songVolumeSlider.value) / 100;
+    audioPlayer.volume = volume;
+});
+
+// Event Listener for Previous Button
+prevButton.addEventListener('click', playPrevious);
+
+// Event Listener for Next Button
+nextButton.addEventListener('click', playNext);
 
 // Function to initiate Spotify authorization
 function initiateSpotifyAuth() {
@@ -68,39 +90,34 @@ function generateRandomString(length) {
 // Function to generate playlist
 function generatePlaylist(description, numSongs) {
     hideError();
-
     const tags = description.split(',').map(tag => tag.trim());
     let generatedSongs = 0;
     const playlist = document.getElementById('playlist');
     playlist.innerHTML = '';
-    playlist.style.maxHeight = '500px'; // Set max height for playlist
-    playlist.style.overflowY = 'auto'; // Add scrollbar if needed
 
     const addedSongs = new Set(); // Set to track added songs
 
     const interval = setInterval(() => {
         if (generatedSongs >= numSongs) {
             clearInterval(interval);
-            document.getElementById('savePlaylistButton').style.display = 'block';
+            savePlaylistButton.style.display = 'block';
             return;
         }
 
         const tag = tags[generatedSongs % tags.length];
         searchSongs(tag, 10).then(songs => {
-            // Filter songs based on user input and ensure each song is unique
             const filteredSongs = songs.filter(song => {
-                return !addedSongs.has(song.id); // Ensure each song is unique
+                return !addedSongs.has(song.id);
             });
 
             if (filteredSongs.length > 0) {
                 const randomIndex = Math.floor(Math.random() * filteredSongs.length);
                 const song = filteredSongs[randomIndex];
-                
-                // Check if song ID is already added
+
                 if (!addedSongs.has(song.id)) {
-                    const songItem = createSongItem(song, generatedSongs + 1); // Pass song number
+                    const songItem = createSongItem(song, generatedSongs + 1);
                     playlist.appendChild(songItem);
-                    addedSongs.add(song.id); // Add song ID to addedSongs set
+                    addedSongs.add(song.id);
                     generatedSongs++;
                 }
             }
@@ -110,6 +127,10 @@ function generatePlaylist(description, numSongs) {
             clearInterval(interval);
         });
     }, 1000);
+
+    // Show playlist section and hide generate section
+    generateSection.style.display = 'none';
+    playlistSection.style.display = 'block';
 }
 
 // Function to create HTML element for song item
@@ -117,15 +138,12 @@ function createSongItem(song, number) {
     const songItem = document.createElement('div');
     songItem.className = 'song-item';
     songItem.innerHTML = `
-        <div class="song-number">${number}.</div> <!-- Add song number -->
+        <div class="song-number">${number}.</div>
         <img src="${song.album.images[0].url}" alt="${song.name}">
         <div class="song-info">
             <h3>${song.name}</h3>
             <p>${song.artists.map(artist => artist.name).join(', ')}</p>
-            <audio controls>
-                <source src="${song.preview_url}" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
+            <audio class="song-audio" src="${song.preview_url}" type="audio/mpeg"></audio>
         </div>
     `;
     return songItem;
@@ -142,24 +160,72 @@ function searchSongs(query, limit) {
     .then(data => data.tracks.items);
 }
 
-// Placeholder function to save playlist on Spotify (not implemented)
-function savePlaylist(playlistName, songs) {
+// Function to save playlist on Spotify
+function savePlaylist(playlistName) {
     const playlistDescription = 'Passe die Beschreibung an'; // Default description
     // Implementierung zur Speicherung der Playlist auf Spotify
     // Hier müsste die API-Aufruflogik für die Playlist-Speicherung stehen
 }
 
-// Check if access token is present in URL hash (after redirect from Spotify)
-const params = new URLSearchParams(window.location.hash.substring(1));
-const tokenType = params.get('token_type');
-accessToken = params.get('access_token');
-expiresIn = parseInt(params.get('expires_in'), 10) * 1000 + Date.now(); // Convert expiresIn to milliseconds
+// Function to play the entire playlist
+function playPlaylist() {
+    const audioElements = document.querySelectorAll('.song-audio');
+    audioElements.forEach(audio => {
+        audio.play();
+    });
+    playPlaylistButton.style.display = 'none';
+    stopPlaylistButton.style.display = 'block';
+}
 
-// Optionally, check for state and perform additional validation if needed
+// Function to stop playing the playlist
+function stopPlaylist() {
+    const audioElements = document.querySelectorAll('.song-audio');
+    audioElements.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+    stopPlaylistButton.style.display = 'none';
+    playPlaylistButton.style.display = 'block';
+}
 
-// Redirect to home page after fetching access token (remove token from URL hash)
-window.history.replaceState({}, document.title, '/');
+// Function to play previous song
+function playPrevious() {
+    const audioElements = document.querySelectorAll('.song-audio');
+    audioElements.forEach((audio, index) => {
+        if (!audio.paused && index > 0) {
+            audio.pause();
+            audio.currentTime = 0;
+            audioElements[index - 1].play();
+        }
+    });
+}
 
-// Optionally, save tokens to localStorage or session storage for persistence
-// localStorage.setItem('spotifyAccessToken', accessToken);
-// localStorage.setItem('spotifyTokenExpiration', expiresIn);
+// Function to play next song
+function playNext() {
+    const audioElements = document.querySelectorAll('.song-audio');
+    audioElements.forEach((audio, index) => {
+        if (!audio.paused && index < audioElements.length - 1) {
+            audio.pause();
+            audio.currentTime = 0;
+            audioElements[index + 1].play();
+        }
+    });
+}
+
+// Function to show error message
+function showError(message) {
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+}
+
+// Function to hide error message
+function hideError() {
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.style.display = 'none';
+}
+
+// Function to validate number input
+function validateNumberInput(input) {
+    input.value = Math.max(parseInt(input.value) || 0, parseInt(input.min));
+}

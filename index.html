@@ -9,17 +9,31 @@
 <body>
     <div class="container">
         <h1>Spotify Playlist Generator</h1>
-        <div class="input-group">
-            <label for="descriptionInput">Thema der Playlist:</label>
-            <input type="text" id="descriptionInput" placeholder="z.B. Party, Chill, Workout">
+        <div id="loginSection">
+            <button id="loginButton">Mit Spotify anmelden</button>
         </div>
-        <div class="input-group">
-            <label for="numSongsInput">Anzahl der Lieder:</label>
-            <input type="number" id="numSongsInput" value="10" min="10" max="10000" oninput="validateNumberInput(this)">
+        <div id="generateSection" style="display: none;">
+            <div class="input-group">
+                <label for="descriptionInput">Thema der Playlist:</label>
+                <input type="text" id="descriptionInput" placeholder="z.B. Party, Chill, Workout">
+            </div>
+            <div class="input-group">
+                <label for="numSongsInput">Anzahl der Lieder:</label>
+                <input type="number" id="numSongsInput" value="10" min="10" max="10000" oninput="validateNumberInput(this)">
+            </div>
+            <button id="generateButton">Playlist generieren</button>
         </div>
-        <button id="generateButton">Playlist generieren</button>
+        <div id="playlistSection" style="display: none;">
+            <button id="playPlaylistButton">Playlist abspielen</button>
+            <button id="stopPlaylistButton" style="display: none;">Playlist stoppen</button>
+            <input type="range" id="volumeSlider" min="0" max="100" value="50">
+            <div class="playlist" id="playlist"></div>
+            <audio id="audioPlayer" controls></audio>
+            <input type="range" id="songVolumeSlider" min="0" max="100" value="50">
+            <button id="prevButton"><<</button>
+            <button id="nextButton">>></button>
+        </div>
         <p id="error-message" class="error-message"></p>
-        <div id="playlist" class="playlist"></div>
         <button id="savePlaylistButton" style="display: none;">Playlist auf Spotify speichern</button>
     </div>
 
