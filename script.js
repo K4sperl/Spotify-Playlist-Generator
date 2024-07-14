@@ -70,11 +70,14 @@ function generatePlaylist(description, numSongs) {
     hideError();
 
     const tags = description.split(',').map(tag => tag.trim());
+    const excludedArtists = ['Twenty4Tim', 'Rock']; // Artists to exclude
     let generatedSongs = 0;
     const playlist = document.getElementById('playlist');
     playlist.innerHTML = '';
+    playlist.style.height = '500px'; // Set max height for playlist
+    playlist.style.overflowY = 'scroll'; // Add scrollbar if needed
 
-    const excludedArtists = ['Twenty4Tim', 'Rock']; // Artists to exclude
+    const addedSongs = new Set(); // Set to track added songs
 
     const interval = setInterval(() => {
         if (generatedSongs >= numSongs) {
@@ -85,10 +88,10 @@ function generatePlaylist(description, numSongs) {
 
         const tag = tags[generatedSongs % tags.length];
         searchSongs(tag, 10).then(songs => {
-            // Filter songs based on excluded artists
+            // Filter songs based on excluded artists and ensure each song is unique
             const filteredSongs = songs.filter(song => {
                 const artists = song.artists.map(artist => artist.name);
-                return !artists.some(artist => excludedArtists.includes(artist));
+                return !artists.some(artist => excludedArtists.includes(artist)) && !addedSongs.has(song.id);
             });
 
             if (filteredSongs.length > 0) {
@@ -96,6 +99,7 @@ function generatePlaylist(description, numSongs) {
                 const song = filteredSongs[randomIndex];
                 const songItem = createSongItem(song);
                 playlist.appendChild(songItem);
+                addedSongs.add(song.id); // Add song to addedSongs set
                 generatedSongs++;
             }
         }).catch(err => {
