@@ -64,6 +64,19 @@ prevButton.addEventListener('click', playPrevious);
 // Event Listener for Next Button
 nextButton.addEventListener('click', playNext);
 
+// Function to check login status and show appropriate sections
+function checkLoginStatus() {
+    if (accessToken) {
+        loginSection.style.display = 'none';
+        generateSection.style.display = 'block';
+    } else {
+        loginSection.style.display = 'block';
+        generateSection.style.display = 'none';
+        playlistSection.style.display = 'none';
+        savePlaylistButton.style.display = 'none';
+    }
+}
+
 // Function to initiate Spotify authorization
 function initiateSpotifyAuth() {
     const state = generateRandomString(16);
@@ -174,58 +187,4 @@ function playPlaylist() {
         audio.play();
     });
     playPlaylistButton.style.display = 'none';
-    stopPlaylistButton.style.display = 'block';
-}
-
-// Function to stop playing the playlist
-function stopPlaylist() {
-    const audioElements = document.querySelectorAll('.song-audio');
-    audioElements.forEach(audio => {
-        audio.pause();
-        audio.currentTime = 0;
-    });
-    stopPlaylistButton.style.display = 'none';
-    playPlaylistButton.style.display = 'block';
-}
-
-// Function to play previous song
-function playPrevious() {
-    const audioElements = document.querySelectorAll('.song-audio');
-    audioElements.forEach((audio, index) => {
-        if (!audio.paused && index > 0) {
-            audio.pause();
-            audio.currentTime = 0;
-            audioElements[index - 1].play();
-        }
-    });
-}
-
-// Function to play next song
-function playNext() {
-    const audioElements = document.querySelectorAll('.song-audio');
-    audioElements.forEach((audio, index) => {
-        if (!audio.paused && index < audioElements.length - 1) {
-            audio.pause();
-            audio.currentTime = 0;
-            audioElements[index + 1].play();
-        }
-    });
-}
-
-// Function to show error message
-function showError(message) {
-    const errorMessage = document.getElementById('error-message');
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-}
-
-// Function to hide error message
-function hideError() {
-    const errorMessage = document.getElementById('error-message');
-    errorMessage.style.display = 'none';
-}
-
-// Function to validate number input
-function validateNumberInput(input) {
-    input.value = Math.max(parseInt(input.value) || 0, parseInt(input.min));
-}
+    stopPlaylistButton
