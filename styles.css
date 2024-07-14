@@ -1,28 +1,21 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #1DB954;
-    color: #FFFFFF;
+    background-color: #1DB954; /* Dunkelgrün */
+    color: white;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    padding: 20px;
 }
 
 .container {
-    text-align: center;
-    background-color: #1A1A1A;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #2D2D2D; /* Dunkelgrau */
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 600px;
 }
 
-h1, h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #1DB954;
+h1 {
+    text-align: center;
 }
 
 .input-group {
@@ -32,71 +25,39 @@ h1, h2 {
 label {
     display: block;
     margin-bottom: 5px;
-    font-size: 16px;
-    color: #FFFFFF;
 }
 
 input[type="text"],
 input[type="number"] {
-    width: calc(100% - 20px);
+    width: 100%;
     padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 10px;
     border: none;
     border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: #333;
-    color: #FFFFFF;
+    margin-bottom: 10px;
 }
 
 button {
-    background-color: #333;
+    background-color: #4A4A4A; /* Dunkelgrau */
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #555;
-}
-
-p.error-message {
-    color: #FF4D4D;
-    font-size: 14px;
-    display: none;
-}
-
-.playlist {
-    margin-top: 20px;
-    text-align: left;
-    overflow-y: auto;
-    max-height: 300px;
+    background-color: #6A6A6A;
 }
 
 .song-item {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-    padding: 10px;
-    background-color: #282828;
-    border-radius: 5px;
 }
 
 .song-number {
     margin-right: 10px;
-    font-size: 18px;
-    color: #1DB954;
-}
-
-.song-item img {
-    width: 50px;
-    height: 50px;
-    margin-right: 10px;
-    border-radius: 5px;
+    font-weight: bold;
 }
 
 .song-info {
@@ -106,31 +67,33 @@ p.error-message {
 .song-info h3 {
     margin: 0;
     font-size: 16px;
-    color: #FFFFFF;
 }
 
 .song-info p {
-    margin: 0;
+    margin: 5px 0 10px;
     font-size: 14px;
-    color: #B3B3B3;
-}
-
-.audio-controls {
-    display: flex;
-    align-items: center;
 }
 
 audio {
-    margin-left: 10px;
+    width: 200px;
 }
 
 .replace-button {
-    background-color: #FF4D4D;
-    color: #FFFFFF;
+    background-color: #4A4A4A; /* Dunkelgrau */
+    color: white;
     border: none;
-    padding: 5px;
     border-radius: 5px;
     cursor: pointer;
-    margin-left: 10px;
-    font-size: 12px;
+    padding: 5px 10px;
+}
+
+.replace-button:hover {
+    background-color: #6A6A6A;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    display: none;
 }
