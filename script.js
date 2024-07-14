@@ -24,6 +24,9 @@ window.onload = function() {
         accessToken = params.get('access_token');
         loginContainer.style.display = 'none';
         appContainer.style.display = 'block';
+    } else {
+        loginContainer.style.display = 'block';
+        appContainer.style.display = 'none';
     }
 };
 
