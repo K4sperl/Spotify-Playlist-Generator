@@ -74,8 +74,8 @@ function generatePlaylist(description, numSongs) {
     let generatedSongs = 0;
     const playlist = document.getElementById('playlist');
     playlist.innerHTML = '';
-    playlist.style.height = '500px'; // Set max height for playlist
-    playlist.style.overflowY = 'scroll'; // Add scrollbar if needed
+    playlist.style.maxHeight = '500px'; // Set max height for playlist
+    playlist.style.overflowY = 'auto'; // Add scrollbar if needed
 
     const addedSongs = new Set(); // Set to track added songs
 
@@ -97,10 +97,14 @@ function generatePlaylist(description, numSongs) {
             if (filteredSongs.length > 0) {
                 const randomIndex = Math.floor(Math.random() * filteredSongs.length);
                 const song = filteredSongs[randomIndex];
-                const songItem = createSongItem(song);
-                playlist.appendChild(songItem);
-                addedSongs.add(song.id); // Add song to addedSongs set
-                generatedSongs++;
+                
+                // Check if song ID is already added
+                if (!addedSongs.has(song.id)) {
+                    const songItem = createSongItem(song);
+                    playlist.appendChild(songItem);
+                    addedSongs.add(song.id); // Add song ID to addedSongs set
+                    generatedSongs++;
+                }
             }
         }).catch(err => {
             console.error(err);
