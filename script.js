@@ -3,7 +3,6 @@ const CLIENT_ID = '0fe8c6577bda455581b8b36be7631e25';
 const REDIRECT_URI = 'https://k4sperl.github.io/Spotify-Playlist-Generator.github.io';
 const SCOPES = 'playlist-modify-public playlist-modify-private';
 let accessToken = '';
-let refreshToken = '';
 let expiresIn = 0;
 
 // Event Listener for Generate Button
@@ -47,7 +46,7 @@ function hideError() {
 function initiateSpotifyAuth() {
     const state = generateRandomString(16);
     const authUrl = 'https://accounts.spotify.com/authorize';
-    let url = `${authUrl}?response_type=code`;
+    let url = `${authUrl}?response_type=token`;
     url += `&client_id=${CLIENT_ID}`;
     url += `&scope=${encodeURIComponent(SCOPES)}`;
     url += `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
@@ -64,38 +63,6 @@ function generateRandomString(length) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
-}
-
-// Function to exchange authorization code for access token and refresh token
-function exchangeCodeForToken(code) {
-    const tokenUrl = 'https://accounts.spotify.com/api/token';
-    const params = {
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: REDIRECT_URI,
-        client_id: CLIENT_ID
-    };
-
-    return fetch(tokenUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams(params)
-    })
-    .then(response => response.json())
-    .then(data => {
-        accessToken = data.access_token;
-        refreshToken = data.refresh_token;
-        expiresIn = Date.now() + (data.expires_in * 1000); // Convert expiresIn to milliseconds
-        // Optionally, save tokens to localStorage or session storage for persistence
-        // localStorage.setItem('spotifyAccessToken', accessToken);
-        // localStorage.setItem('spotifyRefreshToken', refreshToken);
-        // localStorage.setItem('spotifyTokenExpiration', expiresIn);
-    })
-    .catch(error => {
-        console.error('Error exchanging code for token:', error);
-    });
 }
 
 // Function to generate playlist
@@ -175,15 +142,17 @@ function savePlaylist(playlistName, songs) {
     // Hier müsste die API-Aufruflogik für die Playlist-Speicherung stehen
 }
 
-// Check if authorization code is present in URL parameters (after redirect from Spotify)
-const params = new URLSearchParams(window.location.search);
-const code = params.get('code');
+// Check if access token is present in URL hash (after redirect from Spotify)
+const params = new URLSearchParams(window.location.hash.substring(1));
+const tokenType = params.get('token_type');
+accessToken = params.get('access_token');
+expiresIn = parseInt(params.get('expires_in'), 10) * 1000 + Date.now(); // Convert expiresIn to milliseconds
 
-if (code) {
-    exchangeCodeForToken(code)
-        .then(() => {
-            // Optional: Perform actions after successful token exchange
-            // For example, hide login button, show user information, etc.
-            generatePlaylist(description, parseInt(document.getElementById('numSongsInput').value, 10));
-        });
-}
+// Optionally, check for state and perform additional validation if needed
+
+// Redirect to home page after fetching access token (remove token from URL hash)
+window.history.replaceState({}, document.title, '/');
+
+// Optionally, save tokens to localStorage or session storage for persistence
+// localStorage.setItem('spotifyAccessToken', accessToken);
+// localStorage.setItem('spotifyTokenExpiration', expiresIn);
