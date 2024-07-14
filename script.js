@@ -70,7 +70,6 @@ function generatePlaylist(description, numSongs) {
     hideError();
 
     const tags = description.split(',').map(tag => tag.trim());
-    const excludedArtists = ['Twenty4Tim', 'Rock']; // Artists to exclude
     let generatedSongs = 0;
     const playlist = document.getElementById('playlist');
     playlist.innerHTML = '';
@@ -88,10 +87,9 @@ function generatePlaylist(description, numSongs) {
 
         const tag = tags[generatedSongs % tags.length];
         searchSongs(tag, 10).then(songs => {
-            // Filter songs based on excluded artists and ensure each song is unique
+            // Filter songs based on user input and ensure each song is unique
             const filteredSongs = songs.filter(song => {
-                const artists = song.artists.map(artist => artist.name);
-                return !artists.some(artist => excludedArtists.includes(artist)) && !addedSongs.has(song.id);
+                return !addedSongs.has(song.id); // Ensure each song is unique
             });
 
             if (filteredSongs.length > 0) {
@@ -100,7 +98,7 @@ function generatePlaylist(description, numSongs) {
                 
                 // Check if song ID is already added
                 if (!addedSongs.has(song.id)) {
-                    const songItem = createSongItem(song);
+                    const songItem = createSongItem(song, generatedSongs + 1); // Pass song number
                     playlist.appendChild(songItem);
                     addedSongs.add(song.id); // Add song ID to addedSongs set
                     generatedSongs++;
@@ -115,10 +113,11 @@ function generatePlaylist(description, numSongs) {
 }
 
 // Function to create HTML element for song item
-function createSongItem(song) {
+function createSongItem(song, number) {
     const songItem = document.createElement('div');
     songItem.className = 'song-item';
     songItem.innerHTML = `
+        <div class="song-number">${number}.</div> <!-- Add song number -->
         <img src="${song.album.images[0].url}" alt="${song.name}">
         <div class="song-info">
             <h3>${song.name}</h3>

@@ -71,6 +71,8 @@ p.error-message {
 .playlist {
     margin-top: 20px;
     text-align: left;
+    max-height: 500px;
+    overflow-y: auto; /* Scrollbar for overflow */
 }
 
 .song-item {
@@ -106,4 +108,11 @@ p.error-message {
 
 audio {
     margin-left: 10px;
+}
+
+.song-number {
+    font-size: 14px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #ffffff; /* Text color for song number */
 }
