@@ -1,5 +1,4 @@
 const CLIENT_ID = '0fe8c6577bda455581b8b36be7631e25';
-const CLIENT_SECRET = '94a10806a4544e8a854d0a7ac9dc7636';
 const REDIRECT_URI = 'https://k4sperl.github.io/Spotify-Playlist-Generator.github.io';
 let accessToken = '';
 let expiresIn = 0;
@@ -100,7 +99,7 @@ function generatePlaylist() {
             if (songs.length > 0) {
                 const song = songs[0];
 
-                // Check if the song is already used or matches any excluded tags
+                // Check if the song is already used or in the excluded tags
                 if (usedSongs.has(song.id) || excludedTags.some(tag => song.name.toLowerCase().includes(tag.toLowerCase()))) {
                     return;
                 }
