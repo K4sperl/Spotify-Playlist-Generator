@@ -68,10 +68,6 @@ function generateRandomString(length) {
 // Function to generate playlist
 function generatePlaylist(description, numSongs) {
     hideError();
-    if (!accessToken || expiresIn <= Date.now()) {
-        showError('Fehler bei der Authentifizierung mit Spotify. Bitte erneut versuchen.');
-        return;
-    }
 
     const tags = description.split(',').map(tag => tag.trim());
     let generatedSongs = 0;
@@ -144,4 +140,15 @@ function savePlaylist(playlistName, songs) {
     const playlistDescription = 'Passe die Beschreibung an'; // Default description
     // Implementierung zur Speicherung der Playlist auf Spotify
     // Hier müsste die API-Aufruflogik für die Playlist-Speicherung stehen
+}
+
+// Check if access token exists in URL parameters (after redirect from Spotify)
+const params = new URLSearchParams(window.location.hash.substring(1));
+const token = params.get('access_token');
+const expires = params.get('expires_in');
+
+if (token && expires) {
+    accessToken = token;
+    expiresIn = Date.now() + (parseInt(expires, 10) * 1000); // Convert expiresIn to milliseconds
+    // Optional: You can redirect or perform actions after successful authorization here
 }
