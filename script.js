@@ -12,10 +12,7 @@ const playlistSection = document.getElementById('playlistSection');
 const loginButton = document.getElementById('loginButton');
 const generateButton = document.getElementById('generateButton');
 const savePlaylistButton = document.getElementById('savePlaylistButton');
-const playPlaylistButton = document.getElementById('playPlaylistButton');
-const stopPlaylistButton = document.getElementById('stopPlaylistButton');
-const playlistVolumeSlider = document.getElementById('playlistVolumeSlider');
-const playlist = document.getElementById('playlist');
+const playButton = document.getElementById('playButton');
 const prevButton = document.getElementById('prevButton');
 const nextButton = document.getElementById('nextButton');
 const reloadButton = document.getElementById('reloadButton');
@@ -25,12 +22,11 @@ const errorMessageBox = document.getElementById('error-message');
 loginButton.addEventListener('click', initiateSpotifyAuth);
 generateButton.addEventListener('click', generatePlaylist);
 savePlaylistButton.addEventListener('click', savePlaylist);
-playPlaylistButton.addEventListener('click', playPlaylist);
-stopPlaylistButton.addEventListener('click', stopPlaylist);
+playButton.addEventListener('click', togglePlay);
 prevButton.addEventListener('click', playPrevious);
 nextButton.addEventListener('click', playNext);
 reloadButton.addEventListener('click', reloadPage);
-playlistVolumeSlider.addEventListener('input', adjustPlaylistVolume);
+document.addEventListener('input', adjustIndividualVolume);
 
 // Function to check login status and show appropriate sections
 function checkLoginStatus() {
@@ -92,8 +88,8 @@ function generatePlaylist() {
         songItem.innerHTML = `
             <div class="song-number">${i}.</div>
             <div class="song-info">
-                <h3>Example Song ${i}</h3>
-                <p>Artist</p>
+                <h3>Lied ${i}</h3>
+                <p>Künstler</p>
                 <audio class="song-audio" controls>
                     <source src="https://example.com/example.mp3" type="audio/mpeg">
                     Your browser does not support the audio element.
@@ -105,8 +101,7 @@ function generatePlaylist() {
     }
     playlistSection.style.display = 'block';
     savePlaylistButton.style.display = 'block';
-    playPlaylistButton.style.display = 'inline-block';
-    stopPlaylistButton.style.display = 'none';
+    playButton.style.display = 'inline-block';
 }
 
 // Function to save playlist on Spotify
@@ -114,25 +109,9 @@ function savePlaylist() {
     // Implementieren Sie hier die Logik zum Speichern der Playlist auf Spotify
 }
 
-// Function to play the entire playlist
-function playPlaylist() {
-    const audioElements = document.querySelectorAll('.song-audio');
-    audioElements.forEach(audio => {
-        audio.play();
-    });
-    playPlaylistButton.style.display = 'none';
-    stopPlaylistButton.style.display = 'inline-block';
-}
-
-// Function to stop playing the playlist
-function stopPlaylist() {
-    const audioElements = document.querySelectorAll('.song-audio');
-    audioElements.forEach(audio => {
-        audio.pause();
-        audio.currentTime = 0;
-    });
-    playPlaylistButton.style.display = 'inline-block';
-    stopPlaylistButton.style.display = 'none';
+// Function to toggle play/pause of playlist
+function togglePlay() {
+    // Implementieren Sie hier die Logik zum Abspielen/Pausieren der Playlist
 }
 
 // Function to play the previous song in the playlist
@@ -145,15 +124,14 @@ function playNext() {
     // Implementieren Sie hier die Logik zum Abspielen des nächsten Songs
 }
 
-// Function to adjust playlist volume
-function adjustPlaylistVolume() {
-    const volume = parseInt(playlistVolumeSlider.value) / 100;
-    const songVolumeSliders = document.querySelectorAll('.song-volume-slider');
-    songVolumeSliders.forEach(slider => {
-        slider.value = playlistVolumeSlider.value;
-        const audio = slider.parentElement.querySelector('.song-audio');
+// Function to adjust individual song volume
+function adjustIndividualVolume(event) {
+    // Überprüfen, ob das geänderte Element ein Lautstärkeregler für ein Lied ist
+    if (event.target.classList.contains('song-volume-slider')) {
+        const volume = event.target.value / 100;
+        const audio = event.target.parentElement.querySelector('.song-audio');
         audio.volume = volume;
-    });
+    }
 }
 
 // Function to reload the page

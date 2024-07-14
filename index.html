@@ -24,16 +24,17 @@
             <button id="generateButton">Playlist generieren</button>
         </div>
         <div id="playlistSection" style="display: none;">
-            <button id="playPlaylistButton">▶️</button>
-            <button id="stopPlaylistButton" style="display: none;">⏸️</button>
-            <input type="range" id="playlistVolumeSlider" min="0" max="100" value="50">
+            <div id="controls">
+                <button id="prevButton">⏮️</button>
+                <button id="playButton">▶️</button>
+                <button id="nextButton">⏭️</button>
+                <input type="range" id="playlistVolumeSlider" class="master-volume" min="0" max="100" value="50">
+            </div>
             <div class="playlist" id="playlist"></div>
-            <button id="prevButton">⏮️</button>
-            <button id="nextButton">⏭️</button>
-            <button id="reloadButton" style="background-color: red; color: white;">Seite neuladen</button>
         </div>
         <p id="error-message" class="error-message"></p>
         <button id="savePlaylistButton" style="display: none;">Playlist auf Spotify speichern</button>
+        <button id="reloadButton" style="background-color: red; color: white; display: none;">Seite neuladen</button>
     </div>
 
     <script src="script.js"></script>
