@@ -1,8 +1,11 @@
+// Spotify API Credentials
 const CLIENT_ID = '0fe8c6577bda455581b8b36be7631e25';
-const CLIENT_SECRET = '94a10806a4544e8a854d0a7ac9dc7636';
 const REDIRECT_URI = 'https://k4sperl.github.io/Spotify-Playlist-Generator.github.io';
+const SCOPES = 'playlist-modify-public playlist-modify-private';
 let accessToken = '';
+let expiresIn = 0;
 
+// Event Listener for Generate Button
 document.getElementById('generateButton').addEventListener('click', function() {
     var description = document.getElementById('descriptionInput').value;
     var numSongs = parseInt(document.getElementById('numSongsInput').value, 10);
@@ -10,9 +13,15 @@ document.getElementById('generateButton').addEventListener('click', function() {
         showError('Bitte geben Sie eine gültige Anzahl von Liedern ein (mindestens 10, maximal 10.000).');
         return;
     }
-    authorizeSpotify();
+    // Check if accessToken is already set and not expired
+    if (accessToken && expiresIn > Date.now()) {
+        generatePlaylist(description, numSongs); // Proceed to generate playlist
+    } else {
+        initiateSpotifyAuth(); // Otherwise, initiate Spotify authorization
+    }
 });
 
+// Function to validate number input
 function validateNumberInput(input) {
     const value = input.value;
     if (!/^\d*$/.test(value)) {
@@ -20,45 +29,33 @@ function validateNumberInput(input) {
     }
 }
 
+// Function to show error message
 function showError(message) {
     const errorMessage = document.getElementById('error-message');
     errorMessage.textContent = message;
     errorMessage.style.display = 'block';
 }
 
+// Function to hide error message
 function hideError() {
     const errorMessage = document.getElementById('error-message');
     errorMessage.style.display = 'none';
 }
 
-function authorizeSpotify() {
+// Function to initiate Spotify authorization
+function initiateSpotifyAuth() {
+    const state = generateRandomString(16);
     const authUrl = 'https://accounts.spotify.com/authorize';
-    const scopes = 'playlist-modify-public playlist-modify-private';
-
     let url = `${authUrl}?response_type=token`;
     url += `&client_id=${CLIENT_ID}`;
-    url += `&scope=${encodeURIComponent(scopes)}`;
+    url += `&scope=${encodeURIComponent(SCOPES)}`;
     url += `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
-    url += `&state=${generateRandomString(16)}`;
+    url += `&state=${state}`;
 
-    const popup = window.open(url, 'Spotify Auth', 'width=600,height=400');
-
-    const interval = setInterval(() => {
-        try {
-            const hash = popup.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            if (params.get('access_token')) {
-                accessToken = params.get('access_token');
-                popup.close();
-                clearInterval(interval);
-                generatePlaylist(document.getElementById('descriptionInput').value, parseInt(document.getElementById('numSongsInput').value, 10));
-            }
-        } catch (e) {
-            // Ignore cross-origin errors
-        }
-    }, 1000);
+    window.location = url; // Redirect to Spotify authorization page
 }
 
+// Function to generate random string for state
 function generateRandomString(length) {
     let text = '';
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -68,9 +65,10 @@ function generateRandomString(length) {
     return text;
 }
 
+// Function to generate playlist
 function generatePlaylist(description, numSongs) {
     hideError();
-    if (!accessToken) {
+    if (!accessToken || expiresIn <= Date.now()) {
         showError('Fehler bei der Authentifizierung mit Spotify. Bitte erneut versuchen.');
         return;
     }
@@ -115,6 +113,7 @@ function generatePlaylist(description, numSongs) {
     }, 1000);
 }
 
+// Function to search songs on Spotify
 function searchSongs(query, limit) {
     return fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=${limit}`, {
         headers: {
@@ -125,6 +124,7 @@ function searchSongs(query, limit) {
     .then(data => data.tracks.items);
 }
 
+// Placeholder function to save playlist on Spotify (not implemented)
 function savePlaylist(playlistName, songs) {
     // Implementiere hier die Logik zum Speichern der Playlist auf Spotify
 }
