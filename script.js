@@ -12,21 +12,38 @@ const playlistSection = document.getElementById('playlistSection');
 const loginButton = document.getElementById('loginButton');
 const generateButton = document.getElementById('generateButton');
 const savePlaylistButton = document.getElementById('savePlaylistButton');
-const playButton = document.getElementById('playButton');
-const prevButton = document.getElementById('prevButton');
-const nextButton = document.getElementById('nextButton');
-const reloadButton = document.getElementById('reloadButton');
-const errorMessageBox = document.getElementById('error-message');
+const playlist = document.getElementById('playlist');
+const replaceButton = document.getElementById('replaceButton');
+const errorMessage = document.getElementById('error-message');
+const audioPlayer = document.getElementById('audioPlayer');
 
-// Event Listeners
+// Event Listener for Mit Spotify anmelden Button
 loginButton.addEventListener('click', initiateSpotifyAuth);
-generateButton.addEventListener('click', generatePlaylist);
-savePlaylistButton.addEventListener('click', savePlaylist);
-playButton.addEventListener('click', togglePlay);
-prevButton.addEventListener('click', playPrevious);
-nextButton.addEventListener('click', playNext);
-reloadButton.addEventListener('click', reloadPage);
-document.addEventListener('input', adjustIndividualVolume);
+
+// Event Listener for Generate Playlist Button
+generateButton.addEventListener('click', function() {
+    const description = document.getElementById('descriptionInput').value;
+    const numSongs = parseInt(document.getElementById('numSongsInput').value, 10);
+    if (numSongs < 10 || numSongs > 10000 || isNaN(numSongs)) {
+        showError('Bitte geben Sie eine gültige Anzahl von Liedern ein (mindestens 10, maximal 10.000).');
+        return;
+    }
+    generatePlaylist(description, numSongs);
+});
+
+// Event Listener for Replace Button
+replaceButton.addEventListener('click', function() {
+    const currentIndex = Math.floor(Math.random() * playlist.children.length);
+    const songItem = playlist.children[currentIndex];
+    const songAudio = songItem.querySelector('.song-audio');
+    playSongPreview(songAudio);
+});
+
+// Event Listener for Save Playlist Button
+savePlaylistButton.addEventListener('click', function() {
+    const playlistName = document.getElementById('descriptionInput').value;
+    savePlaylist(playlistName);
+});
 
 // Function to check login status and show appropriate sections
 function checkLoginStatus() {
@@ -37,8 +54,7 @@ function checkLoginStatus() {
     if (accessToken) {
         loginSection.style.display = 'none';
         generateSection.style.display = 'block';
-        playlistSection.style.display = 'none';
-        savePlaylistButton.style.display = 'none';
+        playlistSection.style.display = 'none'; // Hide playlist section initially
     } else {
         loginSection.style.display = 'block';
         generateSection.style.display = 'none';
@@ -71,85 +87,88 @@ function generateRandomString(length) {
 }
 
 // Function to generate playlist
-function generatePlaylist() {
-    const description = document.getElementById('descriptionInput').value;
-    const numSongs = parseInt(document.getElementById('numSongsInput').value, 10);
-    if (numSongs < 10 || numSongs > 10000 || isNaN(numSongs)) {
-        showError('Bitte geben Sie eine gültige Anzahl von Liedern ein (mindestens 10, maximal 10.000).');
-        return;
-    }
+function generatePlaylist(description, numSongs) {
     hideError();
+    const tags = description.split(',').map(tag => tag.trim());
+    let generatedSongs = 0;
     playlist.innerHTML = '';
-    // Implementieren Sie hier die Logik zum Generieren der Playlist
-    // Beispiel:
-    for (let i = 1; i <= numSongs; i++) {
-        const songItem = document.createElement('div');
-        songItem.className = 'song-item';
-        songItem.innerHTML = `
-            <div class="song-number">${i}.</div>
-            <div class="song-info">
-                <h3>Lied ${i}</h3>
-                <p>Künstler</p>
-                <audio class="song-audio" controls>
-                    <source src="https://example.com/example.mp3" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-                <input type="range" class="song-volume-slider" min="0" max="100" value="50">
-            </div>
-        `;
-        playlist.appendChild(songItem);
-    }
-    playlistSection.style.display = 'block';
-    savePlaylistButton.style.display = 'block';
-    playButton.style.display = 'inline-block';
+
+    const addedSongs = new Set(); // Set to track added songs
+
+    const interval = setInterval(() => {
+        if (generatedSongs >= numSongs) {
+            clearInterval(interval);
+            savePlaylistButton.style.display = 'block';
+            playlistSection.style.display = 'block'; // Show playlist section after generation
+            return;
+        }
+
+        const tag = tags[generatedSongs % tags.length];
+        searchSongs(tag, 10).then(songs => {
+            const filteredSongs = songs.filter(song => {
+                return !addedSongs.has(song.id);
+            });
+
+            if (filteredSongs.length > 0) {
+                const randomIndex = Math.floor(Math.random() * filteredSongs.length);
+                const song = filteredSongs[randomIndex];
+
+                if (!addedSongs.has(song.id)) {
+                    const songItem = createSongItem(song, generatedSongs + 1);
+                    playlist.appendChild(songItem);
+                    addedSongs.add(song.id);
+                    generatedSongs++;
+                }
+            }
+        }).catch(err => {
+            console.error(err);
+            showError('Fehler beim Abrufen der Lieder. Bitte versuchen Sie es erneut.');
+            clearInterval(interval);
+        });
+    }, 1000);
 }
 
-// Function to save playlist on Spotify
-function savePlaylist() {
+// Function to create HTML for song item
+function createSongItem(song, index) {
+    const songItem = document.createElement('div');
+    songItem.className = 'song-item';
+    songItem.innerHTML = `
+        <div class="song-number">${index}</div>
+        <img src="${song.album.images[0].url}" alt="${song.name}">
+        <div class="song-info">
+            <h3>${song.name}</h3>
+            <p>${song.artists.map(artist => artist.name).join(', ')}</p>
+            <audio class="song-audio">
+                <source src="${song.preview_url}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    `;
+    return songItem;
+}
+
+// Function to search songs on Spotify
+function searchSongs(query, limit) {
+    return fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=${limit}`, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => data.tracks.items);
+}
+
+// Function to play song preview
+function playSongPreview(audioElement) {
+    if (audioPlayer.src !== audioElement.src) {
+        audioPlayer.src = audioElement.src;
+        audioPlayer.play();
+    } else {
+        audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
+    }
+}
+
+// Function to save playlist to Spotify
+function savePlaylist(playlistName) {
     // Implementieren Sie hier die Logik zum Speichern der Playlist auf Spotify
 }
-
-// Function to toggle play/pause of playlist
-function togglePlay() {
-    // Implementieren Sie hier die Logik zum Abspielen/Pausieren der Playlist
-}
-
-// Function to play the previous song in the playlist
-function playPrevious() {
-    // Implementieren Sie hier die Logik zum Abspielen des vorherigen Songs
-}
-
-// Function to play the next song in the playlist
-function playNext() {
-    // Implementieren Sie hier die Logik zum Abspielen des nächsten Songs
-}
-
-// Function to adjust individual song volume
-function adjustIndividualVolume(event) {
-    // Überprüfen, ob das geänderte Element ein Lautstärkeregler für ein Lied ist
-    if (event.target.classList.contains('song-volume-slider')) {
-        const volume = event.target.value / 100;
-        const audio = event.target.parentElement.querySelector('.song-audio');
-        audio.volume = volume;
-    }
-}
-
-// Function to reload the page
-function reloadPage() {
-    location.reload();
-}
-
-// Function to handle errors
-function showError(message) {
-    errorMessageBox.textContent = message;
-    errorMessageBox.style.display = 'block';
-}
-
-// Function to hide error messages
-function hideError() {
-    errorMessageBox.textContent = '';
-    errorMessageBox.style.display = 'none';
-}
-
-// Initialize the page
-checkLoginStatus();
