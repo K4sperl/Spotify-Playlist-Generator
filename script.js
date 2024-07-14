@@ -7,8 +7,8 @@ let expiresIn = 0;
 
 // Event Listener for Generate Button
 document.getElementById('generateButton').addEventListener('click', function() {
-    var description = document.getElementById('descriptionInput').value;
-    var numSongs = parseInt(document.getElementById('numSongsInput').value, 10);
+    const description = document.getElementById('descriptionInput').value;
+    const numSongs = parseInt(document.getElementById('numSongsInput').value, 10);
     if (numSongs < 10 || numSongs > 10000 || isNaN(numSongs)) {
         showError('Bitte geben Sie eine gültige Anzahl von Liedern ein (mindestens 10, maximal 10.000).');
         return;
@@ -78,6 +78,8 @@ function generatePlaylist(description, numSongs) {
     const playlist = document.getElementById('playlist');
     playlist.innerHTML = '';
 
+    const excludedArtists = ['Twenty4Tim', 'Rock']; // Artists to exclude
+
     const interval = setInterval(() => {
         if (generatedSongs >= numSongs) {
             clearInterval(interval);
@@ -86,22 +88,17 @@ function generatePlaylist(description, numSongs) {
         }
 
         const tag = tags[generatedSongs % tags.length];
-        searchSongs(tag, 1).then(songs => {
-            if (songs.length > 0) {
-                const song = songs[0];
-                const songItem = document.createElement('div');
-                songItem.className = 'song-item';
-                songItem.innerHTML = `
-                    <img src="${song.album.images[0].url}" alt="${song.name}">
-                    <div class="song-info">
-                        <h3>${song.name}</h3>
-                        <p>${song.artists.map(artist => artist.name).join(', ')}</p>
-                        <audio controls>
-                            <source src="${song.preview_url}" type="audio/mpeg">
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                `;
+        searchSongs(tag, 10).then(songs => {
+            // Filter songs based on excluded artists
+            const filteredSongs = songs.filter(song => {
+                const artists = song.artists.map(artist => artist.name);
+                return !artists.some(artist => excludedArtists.includes(artist));
+            });
+
+            if (filteredSongs.length > 0) {
+                const randomIndex = Math.floor(Math.random() * filteredSongs.length);
+                const song = filteredSongs[randomIndex];
+                const songItem = createSongItem(song);
                 playlist.appendChild(songItem);
                 generatedSongs++;
             }
@@ -111,6 +108,24 @@ function generatePlaylist(description, numSongs) {
             clearInterval(interval);
         });
     }, 1000);
+}
+
+// Function to create HTML element for song item
+function createSongItem(song) {
+    const songItem = document.createElement('div');
+    songItem.className = 'song-item';
+    songItem.innerHTML = `
+        <img src="${song.album.images[0].url}" alt="${song.name}">
+        <div class="song-info">
+            <h3>${song.name}</h3>
+            <p>${song.artists.map(artist => artist.name).join(', ')}</p>
+            <audio controls>
+                <source src="${song.preview_url}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    `;
+    return songItem;
 }
 
 // Function to search songs on Spotify
@@ -126,5 +141,7 @@ function searchSongs(query, limit) {
 
 // Placeholder function to save playlist on Spotify (not implemented)
 function savePlaylist(playlistName, songs) {
-    // Implementiere hier die Logik zum Speichern der Playlist auf Spotify
+    const playlistDescription = 'Passe die Beschreibung an'; // Default description
+    // Implementierung zur Speicherung der Playlist auf Spotify
+    // Hier müsste die API-Aufruflogik für die Playlist-Speicherung stehen
 }
