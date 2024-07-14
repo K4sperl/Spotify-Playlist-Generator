@@ -66,9 +66,14 @@ nextButton.addEventListener('click', playNext);
 
 // Function to check login status and show appropriate sections
 function checkLoginStatus() {
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    accessToken = params.get('access_token');
+    expiresIn = parseInt(params.get('expires_in'));
+
     if (accessToken) {
         loginSection.style.display = 'none';
         generateSection.style.display = 'block';
+        playlistSection.style.display = 'none'; // Hide playlist section initially
     } else {
         loginSection.style.display = 'block';
         generateSection.style.display = 'none';
@@ -114,6 +119,7 @@ function generatePlaylist(description, numSongs) {
         if (generatedSongs >= numSongs) {
             clearInterval(interval);
             savePlaylistButton.style.display = 'block';
+            playlistSection.style.display = 'block'; // Show playlist section after generation
             return;
         }
 
@@ -187,4 +193,43 @@ function playPlaylist() {
         audio.play();
     });
     playPlaylistButton.style.display = 'none';
-    stopPlaylistButton
+    stopPlaylistButton.style.display = 'inline-block';
+}
+
+// Function to stop playing the playlist
+function stopPlaylist() {
+    const audioElements = document.querySelectorAll('.song-audio');
+    audioElements.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+    playPlaylistButton.style.display = 'inline-block';
+    stopPlaylistButton.style.display = 'none';
+}
+
+// Function to play the previous song in the playlist
+function playPrevious() {
+    // Your implementation to play previous song
+}
+
+// Function to play the next song in the playlist
+function playNext() {
+    // Your implementation to play next song
+}
+
+// Function to handle errors
+function showError(message) {
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+}
+
+// Function to hide error messages
+function hideError() {
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = '';
+    errorMessage.style.display = 'none';
+}
+
+// Initialize the page
+checkLoginStatus();
