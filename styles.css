@@ -1,80 +1,94 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #121212;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+    color: #FFFFFF;
     margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 .container {
+    max-width: 400px;
     width: 90%;
-    max-width: 600px;
-    background-color: #2C2C2C;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.5);
+    background-color: #1DB954;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
 }
 
 h1 {
-    text-align: center;
     font-size: 24px;
-    color: #1DB954;
+    margin-bottom: 20px;
+}
+
+.section {
+    margin-bottom: 20px;
 }
 
 .input-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    text-align: left;
 }
 
 label {
     display: block;
+    font-size: 16px;
     margin-bottom: 5px;
-    font-size: 14px;
-    color: #BBBBBB;
 }
 
 input[type="text"],
 input[type="number"] {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #444;
-    background-color: #1E1E1E;
-    color: white;
+    padding: 8px;
     border-radius: 5px;
+    border: none;
+    font-size: 16px;
 }
 
 button {
     width: 100%;
-    padding: 12px;
-    background-color: #1DB954;
-    color: white;
-    font-size: 16px;
+    padding: 10px;
+    font-size: 18px;
+    color: #FFFFFF;
+    background-color: #4A4A4A;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: #1ed760;
+    background-color: #333333;
 }
 
-.error-message {
-    color: #FF5A5F;
-    text-align: center;
+#playlistVolumeSlider {
+    width: 100%;
     margin-top: 10px;
 }
 
-#controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0;
+.playlist {
+    margin-top: 20px;
+    font-size: 14px;
+    background-color: #333333;
+    padding: 10px;
+    border-radius: 8px;
 }
 
-.master-volume {
-    margin-left: 15px;
-    width: 100px;
+.error {
+    color: #FF4C4C;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+.reload {
+    background-color: red;
+    color: white;
 }
