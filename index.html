@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,35 +7,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Spotify Playlist Generator 🎶</h1>
-        <div id="loginSection" class="section">
-            <button id="loginButton">Mit Spotify anmelden</button>
+    <header>
+        <input type="text" id="searchInput" placeholder="Enter playlist theme...">
+        <button onclick="generatePlaylist()">Generate Playlist</button>
+    </header>
+    
+    <main>
+        <div id="playlistContainer">
+            <!-- Songs will be displayed here -->
         </div>
-        <div id="generateSection" class="section hidden">
-            <div class="input-group">
-                <label for="descriptionInput">Thema der Playlist:</label>
-                <input type="text" id="descriptionInput" placeholder="z.B. Party, Chill, Workout">
-            </div>
-            <div class="input-group">
-                <label for="numSongsInput">Anzahl der Lieder:</label>
-                <input type="number" id="numSongsInput" value="10" min="10" max="10000">
-            </div>
-            <button id="generateButton">Playlist generieren</button>
-        </div>
-        <div id="playlistSection" class="section hidden">
-            <div id="controls">
-                <button id="prevButton">⏮️</button>
-                <button id="playButton">▶️</button>
-                <button id="nextButton">⏭️</button>
-                <input type="range" id="playlistVolumeSlider" min="0" max="100" value="50">
-            </div>
-            <div id="playlist" class="playlist"></div>
-        </div>
-        <button id="savePlaylistButton" class="hidden">Playlist auf Spotify speichern</button>
-        <button id="reloadButton" class="reload hidden">Seite neu laden</button>
-        <p id="error-message" class="error hidden"></p>
-    </div>
+    </main>
+    
     <script src="script.js"></script>
 </body>
 </html>
