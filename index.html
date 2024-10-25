@@ -1,23 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Playlist Generator</title>
     <link rel="stylesheet" href="styles.css">
+    <title>Spotify Playlist Generator</title>
 </head>
 <body>
-    <header>
-        <input type="text" id="searchInput" placeholder="Enter playlist theme...">
-        <button onclick="generatePlaylist()">Generate Playlist</button>
-    </header>
-    
-    <main>
-        <div id="playlistContainer">
-            <!-- Songs will be displayed here -->
-        </div>
-    </main>
-    
+    <div class="container">
+        <h1>Spotify Playlist Generator</h1>
+        <input type="text" id="searchInput" placeholder="Suchbegriff eingeben...">
+        <button id="searchButton">Playlist generieren</button>
+        <div id="playlistContainer" class="playlist"></div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
