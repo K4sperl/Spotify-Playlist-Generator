@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>Spotify Playlist Generator</h1>
-        <div id="loginSection">
+        <h1>Spotify Playlist Generator 🎶</h1>
+        <section id="loginSection">
             <button id="loginButton">Mit Spotify anmelden</button>
-        </div>
-        <div id="generateSection" style="display: none;">
+        </section>
+        <section id="generateSection" style="display: none;">
             <div class="input-group">
                 <label for="descriptionInput">Thema der Playlist:</label>
                 <input type="text" id="descriptionInput" placeholder="z.B. Party, Chill, Workout">
@@ -22,8 +22,8 @@
                 <input type="number" id="numSongsInput" value="10" min="10" max="10000" oninput="validateNumberInput(this)">
             </div>
             <button id="generateButton">Playlist generieren</button>
-        </div>
-        <div id="playlistSection" style="display: none;">
+        </section>
+        <section id="playlistSection" style="display: none;">
             <div id="controls">
                 <button id="prevButton">⏮️</button>
                 <button id="playButton">▶️</button>
@@ -31,10 +31,9 @@
                 <input type="range" id="playlistVolumeSlider" class="master-volume" min="0" max="100" value="50">
             </div>
             <div class="playlist" id="playlist"></div>
-        </div>
+        </section>
         <p id="error-message" class="error-message"></p>
         <button id="savePlaylistButton" style="display: none;">Playlist auf Spotify speichern</button>
-        <button id="reloadButton" style="background-color: red; color: white; display: none;">Seite neuladen</button>
     </div>
 
     <script src="script.js"></script>
